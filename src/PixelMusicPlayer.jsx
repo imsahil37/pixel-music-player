@@ -241,34 +241,40 @@ const PixelMusicPlayer = () => {
     if(audioRef.current) audioRef.current.currentTime = pos * audioRef.current.duration;
   };
 
-  const handleRequestSubmit = async (e) => {
-    if (e.key === 'Enter' && requestText.trim()) {
-      setRequestStatus("sending");
-      try {
-        const response = await fetch("https://formsubmit.co/ajax/sahil.iitg26@gmail.com", {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            subject: "New Song Request",
-            message: `Song Request: ${requestText}`
-          })
-        });
+  const submitRequest = async () => {
+    if (!requestText.trim()) return;
 
-        if (response.ok) {
-          setRequestStatus("success");
-          setRequestText("");
-          setTimeout(() => setRequestStatus("idle"), 3000);
-        } else {
-          setRequestStatus("error");
-          setTimeout(() => setRequestStatus("idle"), 3000);
-        }
-      } catch {
+    setRequestStatus("sending");
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/sahil.iitg26@gmail.com", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          subject: "New Song Request",
+          message: `Song Request: ${requestText}`
+        })
+      });
+
+      if (response.ok) {
+        setRequestStatus("success");
+        setRequestText("");
+        setTimeout(() => setRequestStatus("idle"), 3000);
+      } else {
         setRequestStatus("error");
         setTimeout(() => setRequestStatus("idle"), 3000);
       }
+    } catch {
+      setRequestStatus("error");
+      setTimeout(() => setRequestStatus("idle"), 3000);
+    }
+  };
+
+  const handleRequestKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      submitRequest();
     }
   };
 
@@ -433,12 +439,16 @@ const PixelMusicPlayer = () => {
         .request-container {
           margin-top: 16px;
           position: relative;
+          display: flex;
+          gap: 8px;
+          align-items: stretch;
         }
         .pixel-input {
+          flex: 1;
           width: 100%;
           background: #0f0e1c;
           border: 2px solid #4B4D89;
-          padding: 10px;
+          padding: 12px;
           color: #FFB86C;
           font-family: 'VT323', monospace;
           font-size: 20px;
@@ -447,6 +457,7 @@ const PixelMusicPlayer = () => {
           box-sizing: border-box;
           text-transform: uppercase;
           transition: border-color 0.2s;
+          min-height: 50px; /* Touch friendly height */
         }
         .pixel-input:focus {
           border-color: #5DE2E7;
@@ -539,15 +550,26 @@ const PixelMusicPlayer = () => {
             ) : requestStatus === "error" ? (
               <div className="status-message status-error">ERROR SENDING</div>
             ) : (
-              <input
-                className="pixel-input"
-                type="text"
-                placeholder="REQUEST A SONG..."
-                value={requestText}
-                onChange={(e) => setRequestText(e.target.value)}
-                onKeyDown={handleRequestSubmit}
-                disabled={requestStatus === "sending"}
-              />
+              <>
+                <input
+                  className="pixel-input"
+                  type="text"
+                  placeholder="REQUEST..."
+                  value={requestText}
+                  onChange={(e) => setRequestText(e.target.value)}
+                  onKeyDown={handleRequestKeyDown}
+                  disabled={requestStatus === "sending"}
+                />
+                <button
+                  className="pixel-btn mood"
+                  style={{ width: '60px', height: 'auto', fontSize: '18px' }}
+                  onClick={submitRequest}
+                  disabled={requestStatus === "sending"}
+                  aria-label="Send Request"
+                >
+                  SEND
+                </button>
+              </>
             )}
           </div>
         </div>
