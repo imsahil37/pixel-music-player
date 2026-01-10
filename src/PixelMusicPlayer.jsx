@@ -114,23 +114,37 @@ const MoodPrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style
 const MoodNextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>;
 const SendIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}>
-    <rect x="2" y="12" width="2" height="2" fill="currentColor"/>
-    <rect x="4" y="12" width="2" height="2" fill="currentColor"/>
-    <rect x="4" y="14" width="2" height="2" fill="currentColor"/>
-    <rect x="6" y="10" width="2" height="2" fill="currentColor"/>
-    <rect x="6" y="16" width="2" height="2" fill="currentColor"/>
-    <rect x="8" y="8" width="2" height="2" fill="currentColor"/>
-    <rect x="8" y="14" width="2" height="2" fill="currentColor"/>
-    <rect x="10" y="6" width="2" height="2" fill="currentColor"/>
+    {/* Spine/Diagonal */}
+    <rect x="18" y="4" width="2" height="2" fill="currentColor"/>
+    <rect x="16" y="6" width="2" height="2" fill="currentColor"/>
+    <rect x="14" y="8" width="2" height="2" fill="currentColor"/>
+    <rect x="12" y="10" width="2" height="2" fill="currentColor"/>
     <rect x="10" y="12" width="2" height="2" fill="currentColor"/>
-    <rect x="12" y="8" width="2" height="2" fill="currentColor"/>
-    <rect x="12" y="4" width="2" height="2" fill="currentColor"/>
-    <rect x="14" y="6" width="2" height="2" fill="currentColor"/>
-    <rect x="14" y="2" width="2" height="2" fill="currentColor"/>
+
+    {/* Top/Left Wing */}
     <rect x="16" y="4" width="2" height="2" fill="currentColor"/>
-    <rect x="18" y="2" width="2" height="2" fill="currentColor"/>
+    <rect x="14" y="4" width="2" height="2" fill="currentColor"/>
+    <rect x="14" y="6" width="2" height="2" fill="currentColor"/>
+    <rect x="12" y="6" width="2" height="2" fill="currentColor"/>
+    <rect x="12" y="8" width="2" height="2" fill="currentColor"/>
+    <rect x="10" y="8" width="2" height="2" fill="currentColor"/>
+    <rect x="10" y="10" width="2" height="2" fill="currentColor"/>
+    <rect x="8" y="10" width="2" height="2" fill="currentColor"/>
+    <rect x="8" y="12" width="2" height="2" fill="currentColor"/>
+    <rect x="6" y="12" width="2" height="2" fill="currentColor"/>
+    <rect x="4" y="12" width="2" height="2" fill="currentColor"/>
+
+    {/* Bottom/Right Wing */}
+    <rect x="18" y="6" width="2" height="2" fill="currentColor"/>
+    <rect x="18" y="8" width="2" height="2" fill="currentColor"/>
     <rect x="16" y="8" width="2" height="2" fill="currentColor"/>
+    <rect x="16" y="10" width="2" height="2" fill="currentColor"/>
     <rect x="14" y="10" width="2" height="2" fill="currentColor"/>
+    <rect x="14" y="12" width="2" height="2" fill="currentColor"/>
+    <rect x="12" y="12" width="2" height="2" fill="currentColor"/>
+    <rect x="12" y="14" width="2" height="2" fill="currentColor"/>
+    <rect x="10" y="14" width="2" height="2" fill="currentColor"/>
+    <rect x="10" y="16" width="2" height="2" fill="currentColor"/>
   </svg>
 );
 
