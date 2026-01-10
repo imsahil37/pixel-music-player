@@ -1,19 +1,63 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const PixelMusicPlayer = () => {
+  const [moodIndex, setMoodIndex] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const audioRef = useRef(null);
 
-  const tracks = [
-    { title: "Pixel Dreams", artist: "Chiptune Artist", url: "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" },
-    { title: "8-Bit Adventure", artist: "Retro Composer", url: "https://cdn.pixabay.com/audio/2022/03/10/audio_c272755c30.mp3" },
-    { title: "Cozy Pixels", artist: "Lo-Fi Producer", url: "https://cdn.pixabay.com/audio/2022/08/02/audio_884fe05c21.mp3" }
+  const MOODS = [
+    {
+      label: "INTRO",
+      tracks: [{ title: "Intro", artist: "Buddhu", url: "/songs/intro.m4a" }]
+    },
+    {
+      label: "CHATPATE",
+      tracks: [
+        { title: "Chikni Chameli", artist: "Buddhu", url: "/songs/chatpate/chikni chameli.m4a" },
+        { title: "Mera Nam Mary H", artist: "Buddhu", url: "/songs/chatpate/mera nam mary h.m4a" }
+      ]
+    },
+    {
+      label: "FLIRTING",
+      tracks: [
+        { title: "Afreen Afreen", artist: "Buddhu", url: "/songs/flirting shlirting/afreen afreen.m4a" },
+        { title: "Mujhe Haq H", artist: "Buddhu", url: "/songs/flirting shlirting/mujhe haq h.m4a" }
+      ]
+    },
+    {
+      label: "NO BAKBAK",
+      tracks: [
+        { title: "Gulabi Aankhein", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/gulabi aankhein.m4a" },
+        { title: "Love Dose", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/love dose.m4a" }
+      ]
+    },
+    {
+      label: "ANGRY",
+      tracks: [
+        { title: "Acha Ji Mai Haari", artist: "Buddhu", url: "/songs/mai gussa hu/acha ji mai haari.m4a" },
+        { title: "Tu Hai To", artist: "Buddhu", url: "/songs/mai gussa hu/tu hai to.m4a" }
+      ]
+    },
+    {
+      label: "SUKOON",
+      tracks: [
+        { title: "Bade Ache Lgte H", artist: "Buddhu", url: "/songs/sukoon/bade ache lgte h.m4a" }
+      ]
+    },
+    {
+      label: "MISSING YOU",
+      tracks: [
+        { title: "Hey There Delilah", artist: "Buddhu", url: "/songs/yad aa rhi h/hey there delilah.m4a" },
+        { title: "I'll Miss U", artist: "Buddhu", url: "/songs/yad aa rhi h/i'll miss u.m4a" }
+      ]
+    }
   ];
 
-  // --- Logic ---
+  const tracks = MOODS[moodIndex].tracks;
+
   useEffect(() => {
     if(audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
@@ -29,7 +73,7 @@ const PixelMusicPlayer = () => {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack]);
+  }, [currentTrack, moodIndex]);
 
   const togglePlay = () => {
     if(isPlaying) audioRef.current?.pause();
@@ -49,13 +93,21 @@ const PixelMusicPlayer = () => {
     setTimeout(() => audioRef.current?.play(), 100);
   };
 
+  const changeMood = (direction) => {
+    let newIndex = moodIndex + direction;
+    if (newIndex < 0) newIndex = MOODS.length - 1;
+    if (newIndex >= MOODS.length) newIndex = 0;
+    setMoodIndex(newIndex);
+    setCurrentTrack(0);
+    setProgress(0);
+    setIsPlaying(true);
+  };
+
   const handleProgressClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pos = (e.clientX - rect.left) / rect.width;
     if(audioRef.current) audioRef.current.currentTime = pos * audioRef.current.duration;
   };
-
-  // --- Components ---
 
   const PixelRecord = ({ isSpinning }) => {
     const outerSize = 32;
@@ -134,12 +186,11 @@ const PixelMusicPlayer = () => {
 
   const PixelNote = () => (
     <svg width="24" height="24" viewBox="0 0 16 16" style={{ shapeRendering: 'crispEdges' }}>
-       {/* Beamed Note */}
-       <rect x="2" y="2" width="12" height="2" fill="currentColor" /> {/* Beam */}
-       <rect x="2" y="4" width="2" height="7" fill="currentColor" /> {/* Stem 1 */}
-       <rect x="12" y="4" width="2" height="7" fill="currentColor" /> {/* Stem 2 */}
-       <rect x="1" y="10" width="4" height="4" fill="currentColor" /> {/* Note 1 */}
-       <rect x="11" y="10" width="4" height="4" fill="currentColor" /> {/* Note 2 */}
+       <rect x="2" y="2" width="12" height="2" fill="currentColor" />
+       <rect x="2" y="4" width="2" height="7" fill="currentColor" />
+       <rect x="12" y="4" width="2" height="7" fill="currentColor" />
+       <rect x="1" y="10" width="4" height="4" fill="currentColor" />
+       <rect x="11" y="10" width="4" height="4" fill="currentColor" />
     </svg>
   );
 
@@ -148,9 +199,10 @@ const PixelMusicPlayer = () => {
   const PrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" fill="currentColor"/></svg>;
   const NextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" fill="currentColor"/></svg>;
   const VolumeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="currentColor"/></svg>;
+  const MoodPrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/></svg>;
+  const MoodNextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>;
 
-  // Prepare text for continuous scrolling
-  const marqueeText = `  NOW PLAYING: ${tracks[currentTrack].title} - ${tracks[currentTrack].artist}   +++ \u00A0   `;
+  const marqueeText = `  MOOD: ${MOODS[moodIndex].label}  +++  NOW PLAYING: ${tracks[currentTrack]?.title} - ${tracks[currentTrack]?.artist}   +++ \u00A0   `;
 
   return (
     <div className="pixel-player-container">
@@ -241,7 +293,7 @@ const PixelMusicPlayer = () => {
           white-space: nowrap;
           position: absolute;
           left: 0;
-          animation: scroll 30s linear infinite;
+          animation: scroll 20s linear infinite;
         }
 
         .led-text {
@@ -271,7 +323,7 @@ const PixelMusicPlayer = () => {
         }
 
         .progress-bar {
-          height: 24px; /* Increased height for easier touch */
+          height: 24px;
           background: #2D2B55;
           margin-bottom: 24px;
           position: relative;
@@ -324,7 +376,6 @@ const PixelMusicPlayer = () => {
             inset 4px 4px 0px 0px rgba(255,255,255, 0.8), 
             inset -4px -4px 0px 0px rgba(0,0,0, 0.3);
           transition: transform 0.05s, box-shadow 0.05s;
-          /* Removed clip-path to support bevel effect */
         }
         
         .pixel-btn:active {
@@ -336,6 +387,7 @@ const PixelMusicPlayer = () => {
 
         .pixel-btn.primary { width: 72px; height: 72px; background: #5DE2E7; color: #1E1C38; }
         .pixel-btn.secondary { width: 56px; height: 56px; background: #A5A6C5; }
+        .pixel-btn.mood { width: 48px; height: 48px; background: #FFB86C; color: #1E1C38; }
 
         .volume-container {
           display: flex;
@@ -352,7 +404,7 @@ const PixelMusicPlayer = () => {
           -webkit-appearance: none;
           background: transparent;
           width: 100%;
-          height: 32px; /* Large touch area */
+          height: 32px;
         }
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none;
@@ -360,7 +412,7 @@ const PixelMusicPlayer = () => {
           background: #FF0055;
           border: 3px solid #FFF;
           cursor: pointer;
-          margin-top: -8px; /* (Track 8px - Thumb 24px) / 2 = -8px */
+          margin-top: -8px;
           box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
           image-rendering: pixelated;
         }
@@ -369,6 +421,31 @@ const PixelMusicPlayer = () => {
           background: #4B4D89;
           border: 2px solid #000;
           box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5);
+        }
+
+        /* Mood LED Styles */
+        .mood-section {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #100505;
+          padding: 8px;
+          border: 2px solid #4B4D89;
+          margin-bottom: 16px;
+        }
+        .led-row {
+          display: flex;
+          gap: 6px;
+        }
+        .vintage-led {
+          width: 12px; height: 12px;
+          background-color: #400000;
+          border: 1px solid #000;
+          box-shadow: inset 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        .vintage-led.active {
+          background-color: #FF3300;
+          box-shadow: 0 0 4px #FF3300, inset 1px 1px 2px rgba(255,200,200,0.5);
         }
       `}</style>
 
@@ -392,15 +469,25 @@ const PixelMusicPlayer = () => {
           </div>
         </div>
 
-        {/* LED Screen with Continuous Scrolling */}
+        {/* LED Screen */}
         <div className="led-screen-container">
           <div className="led-text-wrapper">
-            {/* We duplicate the text to allow seamless looping (0 -> -50%) */}
             <span className="led-text">{marqueeText}</span>
             <span className="led-text">{marqueeText}</span>
           </div>
           <div className="led-scanlines"></div>
           <div className="led-glare"></div>
+        </div>
+
+        {/* Mood Controls */}
+        <div className="mood-section">
+           <button className="pixel-btn mood" onClick={() => changeMood(-1)} aria-label="Previous Mood"><MoodPrevIcon /></button>
+           <div className="led-row">
+             {MOODS.map((_, idx) => (
+               <div key={idx} className={`vintage-led ${idx === moodIndex ? 'active' : ''}`} />
+             ))}
+           </div>
+           <button className="pixel-btn mood" onClick={() => changeMood(1)} aria-label="Next Mood"><MoodNextIcon /></button>
         </div>
 
         <div className="progress-bar" onClick={handleProgressClick}>
@@ -431,7 +518,7 @@ const PixelMusicPlayer = () => {
 
       <audio 
         ref={audioRef} 
-        src={tracks[currentTrack].url} 
+        src={tracks[currentTrack]?.url} 
         onLoadedData={() => { if(isPlaying) audioRef.current?.play(); }}
       />
     </div>
