@@ -1,136 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-// --- Components ---
-
-const PixelRecord = ({ isSpinning }) => {
-  const outerSize = 32;
-  const outerCenter = outerSize / 2;
-  const outerRadius = 16;
-  const outerPixels = [];
-  const sheenPixels = [];
-
-  for(let y = 0; y < outerSize; y++) {
-    for(let x = 0; x < outerSize; x++) {
-      const dx = x + 0.5 - outerCenter;
-      const dy = y + 0.5 - outerCenter;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if(dist <= outerRadius) {
-          if(dist > 5.5) {
-            outerPixels.push(<rect key={`o-${x}-${y}`} x={x} y={y} width="1" height="1" fill="#111" />);
-          }
-          if(dist > 5.5 && dx < 0 && dy < 0) {
-            if(Math.floor(dist) % 4 === 0) {
-                sheenPixels.push(<rect key={`s-${x}-${y}`} x={x} y={y} width="1" height="1" fill="rgba(255,255,255,0.15)" />);
-            }
-          }
-      }
-    }
-  }
-
-  const innerSize = 64;
-  const innerCenter = innerSize / 2;
-  const labelRadiusHighRes = 11;
-  const innerPixels = [];
-
-  for(let y = 0; y < innerSize; y++) {
-    for(let x = 0; x < innerSize; x++) {
-      const dx = x + 0.5 - innerCenter;
-      const dy = y + 0.5 - innerCenter;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if(dist <= labelRadiusHighRes) {
-          let color = "#FF0055";
-          if(dist <= 4) color = "#EEE";
-          innerPixels.push(<rect key={`i-${x}-${y}`} x={x} y={y} width="1" height="1" fill={color} />);
-      }
-    }
-  }
-
-  const spinAnimation = isSpinning ? 'spin 3.9s linear infinite' : 'none';
-
-  return (
-    <div style={{ width: '220px', height: '220px', position: 'relative' }}>
-      <svg viewBox={`0 0 ${outerSize} ${outerSize}`} width="100%" height="100%" style={{ shapeRendering: 'crispEdges', position: 'absolute', inset: 0, animation: spinAnimation }}>
-          {outerPixels}
-      </svg>
-      <svg viewBox={`0 0 ${innerSize} ${innerSize}`} width="100%" height="100%" style={{ shapeRendering: 'crispEdges', position: 'absolute', inset: 0, animation: spinAnimation }}>
-          {innerPixels}
-      </svg>
-      <svg viewBox={`0 0 ${outerSize} ${outerSize}`} width="100%" height="100%" style={{ shapeRendering: 'crispEdges', position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          {sheenPixels}
-      </svg>
-    </div>
-  );
-};
-
-const PixelTonearm = () => (
-  <svg width="48" height="140" viewBox="0 0 48 140" style={{ shapeRendering: 'crispEdges' }}>
-    <rect x="24" y="0" width="16" height="24" fill="#475569" />
-    <rect x="28" y="4" width="8" height="16" fill="#64748b" />
-    <rect x="30" y="24" width="4" height="80" fill="#94a3b8" />
-    <rect x="26" y="104" width="4" height="4" fill="#94a3b8" />
-    <rect x="22" y="108" width="4" height="4" fill="#94a3b8" />
-    <rect x="18" y="112" width="4" height="4" fill="#94a3b8" />
-    <rect x="8" y="116" width="14" height="20" fill="#FF0055" />
-    <rect x="10" y="118" width="10" height="16" fill="#fb7185" />
-  </svg>
-);
-
-// Exact Single Eighth Note from Image
-const PixelNote = () => (
-  <svg width="32" height="32" viewBox="0 0 16 16" style={{ shapeRendering: 'crispEdges' }}>
-      {/* Stem */}
-      <rect x="8" y="2" width="2" height="10" fill="currentColor" />
-
-      {/* Flag */}
-      <rect x="10" y="2" width="2" height="2" fill="currentColor" />
-      <rect x="12" y="3" width="1" height="2" fill="currentColor" />
-      <rect x="12" y="5" width="1" height="1" fill="currentColor" />
-
-      {/* Head */}
-      <rect x="4" y="10" width="6" height="4" fill="currentColor" />
-      <rect x="5" y="9" width="4" height="6" fill="currentColor" />
-  </svg>
-);
-
-const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M8 5v14l11-7z" fill="currentColor"/></svg>;
-const PauseIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>;
-const PrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" fill="currentColor"/></svg>;
-const NextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" fill="currentColor"/></svg>;
-const MoodPrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/></svg>;
-const MoodNextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>;
-
-// Dynamic High Res Volume Icon
-const HighResVolumeIcon = ({ vol }) => (
-  <svg width="32" height="32" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}>
-    {/* Speaker Body (Blue/Cyan with dark outline) */}
-    <path d="M4 8h4l5-5v18l-5-5H4z" fill="#5DE2E7" stroke="#100f1f" strokeWidth="2" />
-    <rect x="5" y="9" width="2" height="6" fill="#FFF" opacity="0.5" /> {/* Body Shine */}
-
-    {/* Wave 1 (Low) */}
-    <path d="M15 10v4" stroke="#FFF" strokeWidth="2" fill="none"
-          opacity={vol > 0 ? 1 : 0.2} strokeLinecap="square" />
-
-    {/* Wave 2 (Medium) */}
-    <path d="M18 8v8" stroke="#FFF" strokeWidth="2" fill="none"
-          opacity={vol > 0.33 ? 1 : 0.2} strokeLinecap="square" />
-
-    {/* Wave 3 (High) */}
-    <path d="M21 6v12" stroke="#FFF" strokeWidth="2" fill="none"
-          opacity={vol > 0.66 ? 1 : 0.2} strokeLinecap="square" />
-  </svg>
-);
-
-
 const PixelMusicPlayer = () => {
   const [moodIndex, setMoodIndex] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(0.7);
-  const [requestText, setRequestText] = useState("");
-  const [requestStatus, setRequestStatus] = useState("idle");
   const audioRef = useRef(null);
 
   const MOODS = [
@@ -190,6 +65,23 @@ const PixelMusicPlayer = () => {
 
   const tracks = MOODS[moodIndex].tracks;
 
+  useEffect(() => {
+    if(audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if(!audio) return;
+    const updateProgress = () => { if(audio.duration) setProgress((audio.currentTime / audio.duration) * 100); };
+    const handleEnded = () => nextTrack();
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', handleEnded);
+    return () => {
+      audio.removeEventListener('timeupdate', updateProgress);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [currentTrack, moodIndex]);
+
   const togglePlay = () => {
     if(isPlaying) audioRef.current?.pause();
     else audioRef.current?.play();
@@ -218,65 +110,133 @@ const PixelMusicPlayer = () => {
     setIsPlaying(true);
   };
 
-  useEffect(() => {
-    if(audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if(!audio) return;
-    const updateProgress = () => { if(audio.duration) setProgress((audio.currentTime / audio.duration) * 100); };
-    const handleEnded = () => nextTrack();
-    audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('ended', handleEnded);
-    return () => {
-      audio.removeEventListener('timeupdate', updateProgress);
-      audio.removeEventListener('ended', handleEnded);
-    };
-  }, [currentTrack, moodIndex]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleProgressClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pos = (e.clientX - rect.left) / rect.width;
     if(audioRef.current) audioRef.current.currentTime = pos * audioRef.current.duration;
   };
 
-  const submitRequest = async () => {
-    if (!requestText.trim()) return;
+  // --- Components ---
 
-    setRequestStatus("sending");
-    try {
-      const response = await fetch("https://formsubmit.co/ajax/sahil.iitg26@gmail.com", {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          subject: "New Song Request",
-          message: `Song Request: ${requestText}`
-        })
-      });
+  const PixelRecord = ({ isSpinning }) => {
+    const outerSize = 32;
+    const outerCenter = outerSize / 2;
+    const outerRadius = 16; 
+    const outerPixels = [];
+    const sheenPixels = [];
 
-      if (response.ok) {
-        setRequestStatus("success");
-        setRequestText("");
-        setTimeout(() => setRequestStatus("idle"), 3000);
-      } else {
-        setRequestStatus("error");
-        setTimeout(() => setRequestStatus("idle"), 3000);
+    for(let y = 0; y < outerSize; y++) {
+      for(let x = 0; x < outerSize; x++) {
+        const dx = x + 0.5 - outerCenter;
+        const dy = y + 0.5 - outerCenter;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if(dist <= outerRadius) {
+           if(dist > 5.5) {
+              outerPixels.push(<rect key={`o-${x}-${y}`} x={x} y={y} width="1" height="1" fill="#111" />);
+           }
+           if(dist > 5.5 && dx < 0 && dy < 0) {
+              if(Math.floor(dist) % 4 === 0) {
+                 sheenPixels.push(<rect key={`s-${x}-${y}`} x={x} y={y} width="1" height="1" fill="rgba(255,255,255,0.15)" />);
+              }
+           }
+        }
       }
-    } catch {
-      setRequestStatus("error");
-      setTimeout(() => setRequestStatus("idle"), 3000);
     }
+
+    const innerSize = 64;
+    const innerCenter = innerSize / 2;
+    const labelRadiusHighRes = 11;
+    const innerPixels = [];
+
+    for(let y = 0; y < innerSize; y++) {
+      for(let x = 0; x < innerSize; x++) {
+        const dx = x + 0.5 - innerCenter;
+        const dy = y + 0.5 - innerCenter;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if(dist <= labelRadiusHighRes) {
+           let color = "#FF0055";
+           if(dist <= 4) color = "#EEE";
+           innerPixels.push(<rect key={`i-${x}-${y}`} x={x} y={y} width="1" height="1" fill={color} />);
+        }
+      }
+    }
+
+    const spinAnimation = isSpinning ? 'spin 3.9s linear infinite' : 'none';
+
+    return (
+      <div style={{ width: '220px', height: '220px', position: 'relative' }}>
+        <svg viewBox={`0 0 ${outerSize} ${outerSize}`} width="100%" height="100%" style={{ shapeRendering: 'crispEdges', position: 'absolute', inset: 0, animation: spinAnimation }}>
+           {outerPixels}
+        </svg>
+        <svg viewBox={`0 0 ${innerSize} ${innerSize}`} width="100%" height="100%" style={{ shapeRendering: 'crispEdges', position: 'absolute', inset: 0, animation: spinAnimation }}>
+           {innerPixels}
+        </svg>
+        <svg viewBox={`0 0 ${outerSize} ${outerSize}`} width="100%" height="100%" style={{ shapeRendering: 'crispEdges', position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+           {sheenPixels}
+        </svg>
+      </div>
+    );
   };
 
-  const handleRequestKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      submitRequest();
-    }
-  };
+  const PixelTonearm = () => (
+    <svg width="48" height="140" viewBox="0 0 48 140" style={{ shapeRendering: 'crispEdges' }}>
+      <rect x="24" y="0" width="16" height="24" fill="#475569" />
+      <rect x="28" y="4" width="8" height="16" fill="#64748b" />
+      <rect x="30" y="24" width="4" height="80" fill="#94a3b8" />
+      <rect x="26" y="104" width="4" height="4" fill="#94a3b8" />
+      <rect x="22" y="108" width="4" height="4" fill="#94a3b8" />
+      <rect x="18" y="112" width="4" height="4" fill="#94a3b8" />
+      <rect x="8" y="116" width="14" height="20" fill="#FF0055" />
+      <rect x="10" y="118" width="10" height="16" fill="#fb7185" />
+    </svg>
+  );
+
+  // Exact Single Eighth Note from Image
+  const PixelNote = () => (
+    <svg width="32" height="32" viewBox="0 0 16 16" style={{ shapeRendering: 'crispEdges' }}>
+       {/* Stem */}
+       <rect x="8" y="2" width="2" height="10" fill="currentColor" />
+       
+       {/* Flag */}
+       <rect x="10" y="2" width="2" height="2" fill="currentColor" />
+       <rect x="12" y="3" width="1" height="2" fill="currentColor" />
+       <rect x="12" y="5" width="1" height="1" fill="currentColor" />
+       
+       {/* Head */}
+       <rect x="4" y="10" width="6" height="4" fill="currentColor" />
+       <rect x="5" y="9" width="4" height="6" fill="currentColor" />
+    </svg>
+  );
+
+  const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M8 5v14l11-7z" fill="currentColor"/></svg>;
+  const PauseIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>;
+  const PrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" fill="currentColor"/></svg>;
+  const NextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" fill="currentColor"/></svg>;
+  const MoodPrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/></svg>;
+  const MoodNextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>;
+
+  // Dynamic High Res Volume Icon
+  const HighResVolumeIcon = ({ vol }) => (
+    <svg width="32" height="32" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}>
+      {/* Speaker Body (Blue/Cyan with dark outline) */}
+      <path d="M4 8h4l5-5v18l-5-5H4z" fill="#5DE2E7" stroke="#100f1f" strokeWidth="2" />
+      <rect x="5" y="9" width="2" height="6" fill="#FFF" opacity="0.5" /> {/* Body Shine */}
+
+      {/* Wave 1 (Low) */}
+      <path d="M15 10v4" stroke="#FFF" strokeWidth="2" fill="none" 
+            opacity={vol > 0 ? 1 : 0.2} strokeLinecap="square" />
+      
+      {/* Wave 2 (Medium) */}
+      <path d="M18 8v8" stroke="#FFF" strokeWidth="2" fill="none" 
+            opacity={vol > 0.33 ? 1 : 0.2} strokeLinecap="square" />
+
+      {/* Wave 3 (High) */}
+      <path d="M21 6v12" stroke="#FFF" strokeWidth="2" fill="none" 
+            opacity={vol > 0.66 ? 1 : 0.2} strokeLinecap="square" />
+    </svg>
+  );
 
   const marqueeText = `  MOOD: ${MOODS[moodIndex].label}  +++  NOW PLAYING: ${tracks[currentTrack]?.title} - ${tracks[currentTrack]?.artist}   +++ \u00A0   `;
 
@@ -435,46 +395,6 @@ const PixelMusicPlayer = () => {
           font-family: 'VT323', monospace; color: #555; font-size: 14px; line-height: 1;
         }
         .led-label.active { color: #FF5500; text-shadow: 0 0 4px rgba(255, 85, 0, 0.4); }
-
-        .request-container {
-          margin-top: 16px;
-          position: relative;
-          display: flex;
-          gap: 8px;
-          align-items: stretch;
-        }
-        .pixel-input {
-          flex: 1;
-          width: 100%;
-          background: #0f0e1c;
-          border: 2px solid #4B4D89;
-          padding: 12px;
-          color: #FFB86C;
-          font-family: 'VT323', monospace;
-          font-size: 20px;
-          outline: none;
-          box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5);
-          box-sizing: border-box;
-          text-transform: uppercase;
-          transition: border-color 0.2s;
-          min-height: 50px; /* Touch friendly height */
-        }
-        .pixel-input:focus {
-          border-color: #5DE2E7;
-          box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(93, 226, 231, 0.2);
-        }
-        .pixel-input::placeholder {
-          color: #4B4D89;
-        }
-        .status-message {
-          margin-top: 8px;
-          text-align: center;
-          font-size: 18px;
-          height: 20px;
-          text-shadow: 0 0 4px rgba(0,0,0,0.5);
-        }
-        .status-success { color: #5DE2E7; }
-        .status-error { color: #FF0055; }
       `}</style>
 
       <div className="player-card">
@@ -542,35 +462,6 @@ const PixelMusicPlayer = () => {
               onChange={(e) => setVolume(parseFloat(e.target.value))} 
               aria-label="Volume Control"
             />
-          </div>
-
-          <div className="request-container">
-            {requestStatus === "success" ? (
-              <div className="status-message status-success">REQUEST SENT!</div>
-            ) : requestStatus === "error" ? (
-              <div className="status-message status-error">ERROR SENDING</div>
-            ) : (
-              <>
-                <input
-                  className="pixel-input"
-                  type="text"
-                  placeholder="REQUEST..."
-                  value={requestText}
-                  onChange={(e) => setRequestText(e.target.value)}
-                  onKeyDown={handleRequestKeyDown}
-                  disabled={requestStatus === "sending"}
-                />
-                <button
-                  className="pixel-btn mood"
-                  style={{ width: '60px', height: 'auto', fontSize: '18px' }}
-                  onClick={submitRequest}
-                  disabled={requestStatus === "sending"}
-                  aria-label="Send Request"
-                >
-                  SEND
-                </button>
-              </>
-            )}
           </div>
         </div>
 
