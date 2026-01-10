@@ -9,6 +9,11 @@ const PixelMusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(0.7);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+
+  const [requestSong, setRequestSong] = useState('');
+  const [requestArtist, setRequestArtist] = useState('');
+
   const audioRef = useRef(null);
 
   // Derive tracks from currentMood
@@ -69,6 +74,16 @@ const PixelMusicPlayer = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pos = (e.clientX - rect.left) / rect.width;
     if(audioRef.current) audioRef.current.currentTime = pos * audioRef.current.duration;
+  };
+
+  const handleSendRequest = (e) => {
+    e.preventDefault();
+    const subject = encodeURIComponent("Song Request: " + requestSong);
+    const body = encodeURIComponent(`I would like to request the following song:\n\nTitle: ${requestSong}\nArtist/Note: ${requestArtist}\n\nSent from Pixel Music Player.`);
+    window.location.href = `mailto:sahil.iitg26@gmail.com?subject=${subject}&body=${body}`;
+    setShowRequestModal(false);
+    setRequestSong('');
+    setRequestArtist('');
   };
 
   // --- Components ---
@@ -176,6 +191,8 @@ const PixelMusicPlayer = () => {
   const VolumeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="currentColor"/></svg>;
   const ArrowUpIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M7 14l5-5 5 5z" fill="currentColor"/></svg>;
   const ArrowDownIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M7 10l5 5 5-5z" fill="currentColor"/></svg>;
+  const MailIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="currentColor"/></svg>;
+  const CloseIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg>;
 
   // Prepare text for continuous scrolling
   const marqueeText = `  NOW PLAYING: ${tracks[currentTrack].title} - ${tracks[currentTrack].artist}   +++ \u00A0   `;
@@ -405,6 +422,14 @@ const PixelMusicPlayer = () => {
            color: #1E1C38;
         }
 
+        .pixel-btn.quartary {
+           width: 44px; height: 44px;
+           --btn-light: #F7E987;
+           --btn-main: #F9D923;
+           --btn-shadow: #D4B61C;
+           color: #1E1C38;
+        }
+
         .pixel-btn svg {
           filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2));
         }
@@ -419,6 +444,7 @@ const PixelMusicPlayer = () => {
           margin-top: 8px;
           width: 100%;
           box-sizing: border-box;
+          gap: 12px;
         }
         input[type=range] {
           -webkit-appearance: none;
@@ -496,7 +522,107 @@ const PixelMusicPlayer = () => {
            letter-spacing: 1px;
         }
 
+        /* MODAL */
+        .modal-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.8);
+          z-index: 100;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+        }
+        .modal-window {
+          background: #E2D9F3;
+          border: 4px solid #4B4D89;
+          box-shadow:
+            inset 4px 4px 0 #FFF,
+            inset -4px -4px 0 #2D2B55,
+            0 10px 20px rgba(0,0,0,0.5);
+          width: 100%;
+          max-width: 320px;
+          padding: 4px;
+        }
+        .modal-header {
+          background: #4B4D89;
+          color: #FFF;
+          padding: 4px 8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 18px;
+        }
+        .modal-body {
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .form-group {
+           display: flex;
+           flex-direction: column;
+           gap: 4px;
+        }
+        .form-group label {
+           color: #2D2B55;
+           font-size: 16px;
+        }
+        .pixel-input {
+           font-family: 'VT323', monospace;
+           font-size: 18px;
+           padding: 8px;
+           background: #FFF;
+           border: 2px solid #2D2B55;
+           outline: none;
+        }
+        .pixel-input:focus {
+           background: #F7E987;
+        }
+
       `}</style>
+
+      {/* MODAL */}
+      {showRequestModal && (
+        <div className="modal-overlay">
+          <div className="modal-window">
+             <div className="modal-header">
+                <span>REQUEST LINE</span>
+                <button onClick={() => setShowRequestModal(false)} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer' }}>
+                   <CloseIcon />
+                </button>
+             </div>
+             <div className="modal-body">
+                <form onSubmit={handleSendRequest} className="form-group">
+                   <div className="form-group">
+                      <label>SONG TITLE:</label>
+                      <input
+                        type="text"
+                        className="pixel-input"
+                        value={requestSong}
+                        onChange={(e) => setRequestSong(e.target.value)}
+                        required
+                      />
+                   </div>
+                   <div className="form-group">
+                      <label>ARTIST / NOTE:</label>
+                      <input
+                        type="text"
+                        className="pixel-input"
+                        value={requestArtist}
+                        onChange={(e) => setRequestArtist(e.target.value)}
+                      />
+                   </div>
+                   <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'center' }}>
+                     <button type="submit" className="pixel-btn primary" style={{ width: '100%', height: '50px' }}>
+                        <div className="pixel-btn-inner" style={{ fontSize: '20px' }}>SEND REQUEST</div>
+                     </button>
+                   </div>
+                </form>
+             </div>
+          </div>
+        </div>
+      )}
 
       <div className="player-card">
         
@@ -567,13 +693,17 @@ const PixelMusicPlayer = () => {
           </div>
 
           <div className="volume-container">
-            <div style={{ marginRight: '12px', color: '#A5A6C5' }}><VolumeIcon /></div>
+            <div style={{ marginRight: '8px', color: '#A5A6C5' }}><VolumeIcon /></div>
             <input 
               type="range" min="0" max="1" step="0.01" 
               value={volume} 
               onChange={(e) => setVolume(parseFloat(e.target.value))} 
               aria-label="Volume Control"
             />
+            {/* REQUEST BUTTON */}
+            <button className="pixel-btn quartary" onClick={() => setShowRequestModal(true)} aria-label="Request Song">
+               <div className="pixel-btn-inner"><MailIcon /></div>
+            </button>
           </div>
         </div>
 
