@@ -94,13 +94,45 @@ const PixelNote = () => (
   </svg>
 );
 
-const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M8 5v14l11-7z" fill="currentColor"/></svg>;
-const PauseIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>;
+const PlayIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}>
+    <rect x="6" y="4" width="2" height="16" fill="currentColor"/>
+    <rect x="8" y="6" width="2" height="12" fill="currentColor"/>
+    <rect x="10" y="8" width="2" height="8" fill="currentColor"/>
+    <rect x="12" y="10" width="2" height="4" fill="currentColor"/>
+  </svg>
+);
+const PauseIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}>
+    <rect x="6" y="5" width="4" height="14" fill="currentColor"/>
+    <rect x="14" y="5" width="4" height="14" fill="currentColor"/>
+  </svg>
+);
 const PrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" fill="currentColor"/></svg>;
 const NextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" fill="currentColor"/></svg>;
 const MoodPrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/></svg>;
 const MoodNextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>;
-const SendIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/></svg>;
+const SendIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}>
+    <rect x="2" y="12" width="2" height="2" fill="currentColor"/>
+    <rect x="4" y="12" width="2" height="2" fill="currentColor"/>
+    <rect x="4" y="14" width="2" height="2" fill="currentColor"/>
+    <rect x="6" y="10" width="2" height="2" fill="currentColor"/>
+    <rect x="6" y="16" width="2" height="2" fill="currentColor"/>
+    <rect x="8" y="8" width="2" height="2" fill="currentColor"/>
+    <rect x="8" y="14" width="2" height="2" fill="currentColor"/>
+    <rect x="10" y="6" width="2" height="2" fill="currentColor"/>
+    <rect x="10" y="12" width="2" height="2" fill="currentColor"/>
+    <rect x="12" y="8" width="2" height="2" fill="currentColor"/>
+    <rect x="12" y="4" width="2" height="2" fill="currentColor"/>
+    <rect x="14" y="6" width="2" height="2" fill="currentColor"/>
+    <rect x="14" y="2" width="2" height="2" fill="currentColor"/>
+    <rect x="16" y="4" width="2" height="2" fill="currentColor"/>
+    <rect x="18" y="2" width="2" height="2" fill="currentColor"/>
+    <rect x="16" y="8" width="2" height="2" fill="currentColor"/>
+    <rect x="14" y="10" width="2" height="2" fill="currentColor"/>
+  </svg>
+);
 
 // Dynamic High Res Volume Icon
 const HighResVolumeIcon = ({ vol }) => (
@@ -380,40 +412,53 @@ const PixelMusicPlayer = () => {
           box-shadow: inset 2px 2px 8px rgba(0,0,0,0.4);
         }
 
-        /* Segmented Track Look */
+        /* Vintage Fader Look */
         input[type=range] {
           -webkit-appearance: none; background: transparent; width: 100%; height: 28px; margin: 0;
         }
         
         input[type=range]::-webkit-slider-runnable-track {
           width: 100%; height: 20px;
-          /* Alternating segments to create the 'bar' look */
-          background: repeating-linear-gradient(
-            to right,
-            #151329,          /* Border start */
-            #151329 2px,
-            #FFB86C 2px,      /* Segment color (using existing mood orange/gold) */
-            #FFB86C 14px,     
-            #151329 14px,     /* Border end */
-            #151329 16px      /* Gap */
-          );
+          background: #0a0a0f; /* Dark Slot */
           border: 2px solid #100f1f;
-          border-radius: 4px;
+          /* Pixelated rounded corners (chamfer) */
+          clip-path: polygon(
+            2px 0, calc(100% - 2px) 0,
+            100% 2px, 100% calc(100% - 2px),
+            calc(100% - 2px) 100%, 2px 100%,
+            0 calc(100% - 2px), 0 2px
+          );
         }
 
-        /* Rectangular Thumb (Handle) */
+        /* Thumb with Grip Lines */
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none;
           height: 26px; width: 14px;
           background: #FF0055; /* Main Pink */
           border: 2px solid #100f1f;
-          margin-top: -5px; /* Centers thumb over the 20px track */
+          margin-top: -5px;
           cursor: pointer;
+
+          /* Grip Grooves */
+          background-image: repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent 3px,
+            rgba(0, 0, 0, 0.2) 3px,
+            rgba(0, 0, 0, 0.2) 5px
+          );
+
           box-shadow: 
-            inset 2px 2px 0 rgba(255, 255, 255, 0.4), /* Shine */
-            inset -2px -2px 0 rgba(0, 0, 0, 0.2);
-          /* Gloss effect on thumb */
-          background-image: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%);
+            inset 1px 1px 0 rgba(255, 255, 255, 0.4),
+            inset -1px -1px 0 rgba(0, 0, 0, 0.2);
+
+          /* Pixelated rounded corners */
+          clip-path: polygon(
+            2px 0, calc(100% - 2px) 0,
+            100% 2px, 100% calc(100% - 2px),
+            calc(100% - 2px) 100%, 2px 100%,
+            0 calc(100% - 2px), 0 2px
+          );
         }
 
         /* Mood LED Styles */
