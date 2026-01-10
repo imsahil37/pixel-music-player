@@ -100,6 +100,7 @@ const PrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ 
 const NextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" fill="currentColor"/></svg>;
 const MoodPrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/></svg>;
 const MoodNextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>;
+const SendIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/></svg>;
 
 // Dynamic High Res Volume Icon
 const HighResVolumeIcon = ({ vol }) => (
@@ -241,35 +242,39 @@ const PixelMusicPlayer = () => {
     if(audioRef.current) audioRef.current.currentTime = pos * audioRef.current.duration;
   };
 
-  const handleRequestSubmit = async (e) => {
-    if (e.key === 'Enter' && requestText.trim()) {
-      setRequestStatus("sending");
-      try {
-        const response = await fetch("https://formsubmit.co/ajax/sahil.iitg26@gmail.com", {
-          method: "POST",
-          headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({ 
-            subject: "New Song Request",
-            message: `Song Request: ${requestText}`
-          })
-        });
-        
-        if (response.ok) {
-          setRequestStatus("success");
-          setRequestText("");
-          setTimeout(() => setRequestStatus("idle"), 3000);
-        } else {
-          setRequestStatus("error");
-          setTimeout(() => setRequestStatus("idle"), 3000);
-        }
-      } catch {
+  const submitRequest = async () => {
+    if (!requestText.trim()) return;
+
+    setRequestStatus("sending");
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/sahil.iitg26@gmail.com", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          subject: "New Song Request",
+          message: `Song Request: ${requestText}`
+        })
+      });
+
+      if (response.ok) {
+        setRequestStatus("success");
+        setRequestText("");
+        setTimeout(() => setRequestStatus("idle"), 3000);
+      } else {
         setRequestStatus("error");
         setTimeout(() => setRequestStatus("idle"), 3000);
       }
+    } catch {
+      setRequestStatus("error");
+      setTimeout(() => setRequestStatus("idle"), 3000);
     }
+  };
+
+  const handleRequestKeyDown = (e) => {
+    if (e.key === 'Enter') submitRequest();
   };
 
   const marqueeText = `  MOOD: ${MOODS[moodIndex].label}  +++  NOW PLAYING: ${tracks[currentTrack]?.title} - ${tracks[currentTrack]?.artist}   +++ \u00A0   `;
@@ -434,7 +439,21 @@ const PixelMusicPlayer = () => {
           margin-top: 16px;
           position: relative;
         }
+        .input-group {
+          display: flex;
+          gap: 8px;
+          width: 100%;
+        }
+        .send-btn {
+          width: 44px;
+          height: 44px;
+          background: #FF0055;
+          color: #FFF;
+          flex-shrink: 0;
+          padding: 0;
+        }
         .pixel-input {
+          flex: 1;
           width: 100%;
           background: #0f0e1c;
           border: 2px solid #4B4D89;
@@ -539,15 +558,20 @@ const PixelMusicPlayer = () => {
             ) : requestStatus === "error" ? (
               <div className="status-message status-error">ERROR SENDING</div>
             ) : (
-              <input 
-                className="pixel-input"
-                type="text"
-                placeholder="REQUEST A SONG..."
-                value={requestText}
-                onChange={(e) => setRequestText(e.target.value)}
-                onKeyDown={handleRequestSubmit}
-                disabled={requestStatus === "sending"}
-              />
+              <div className="input-group">
+                <input
+                  className="pixel-input"
+                  type="text"
+                  placeholder="REQUEST A SONG..."
+                  value={requestText}
+                  onChange={(e) => setRequestText(e.target.value)}
+                  onKeyDown={handleRequestKeyDown}
+                  disabled={requestStatus === "sending"}
+                />
+                <button className="pixel-btn send-btn" onClick={submitRequest} disabled={requestStatus === "sending"} aria-label="Send Request">
+                  <SendIcon />
+                </button>
+              </div>
             )}
           </div>
         </div>
