@@ -254,7 +254,7 @@ const PixelMusicPlayer = () => {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          subject: "New Song Request",
+          subject: "Pglu requested a new song...",
           message: `Song Request: ${requestText}`
         })
       });
