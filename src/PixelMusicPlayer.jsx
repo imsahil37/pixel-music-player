@@ -133,13 +133,23 @@ const PixelMusicPlayer = () => {
   );
 
   const PixelNote = () => (
-    <svg width="24" height="24" viewBox="0 0 16 16" style={{ shapeRendering: 'crispEdges' }}>
-       {/* Beamed Note */}
-       <rect x="2" y="2" width="12" height="2" fill="currentColor" /> {/* Beam */}
-       <rect x="2" y="4" width="2" height="7" fill="currentColor" /> {/* Stem 1 */}
-       <rect x="12" y="4" width="2" height="7" fill="currentColor" /> {/* Stem 2 */}
-       <rect x="1" y="10" width="4" height="4" fill="currentColor" /> {/* Note 1 */}
-       <rect x="11" y="10" width="4" height="4" fill="currentColor" /> {/* Note 2 */}
+    <svg width="48" height="48" viewBox="0 0 48 48" style={{ shapeRendering: 'crispEdges' }}>
+      {/* High-res pixelated beamed note */}
+      {/* Beam */}
+      <rect x="8" y="8" width="34" height="6" fill="currentColor" />
+      {/* Stems */}
+      <rect x="8" y="14" width="6" height="22" fill="currentColor" />
+      <rect x="36" y="14" width="6" height="22" fill="currentColor" />
+      {/* Note heads */}
+      <rect x="4" y="32" width="14" height="10" fill="currentColor" />
+      <rect x="32" y="32" width="14" height="10" fill="currentColor" />
+
+      {/* Pixel detailing (highlights/shadows for "resolution" look) */}
+      <rect x="9" y="9" width="32" height="2" fill="rgba(255,255,255,0.3)" /> {/* Beam highlight */}
+      <rect x="9" y="14" width="2" height="22" fill="rgba(255,255,255,0.3)" /> {/* Stem 1 highlight */}
+      <rect x="37" y="14" width="2" height="22" fill="rgba(255,255,255,0.3)" /> {/* Stem 2 highlight */}
+      <rect x="5" y="33" width="4" height="4" fill="rgba(255,255,255,0.3)" /> {/* Note 1 sheen */}
+      <rect x="33" y="33" width="4" height="4" fill="rgba(255,255,255,0.3)" /> {/* Note 2 sheen */}
     </svg>
   );
 
@@ -271,7 +281,7 @@ const PixelMusicPlayer = () => {
         }
 
         .progress-bar {
-          height: 24px; /* Increased height for easier touch */
+          height: 24px;
           background: #2D2B55;
           margin-bottom: 24px;
           position: relative;
@@ -308,34 +318,78 @@ const PixelMusicPlayer = () => {
         
         .btn-group {
           display: flex;
-          gap: 16px;
+          gap: 20px;
           justify-content: center;
           width: 100%;
+          align-items: center;
         }
 
+        /* NEW 3D BUTTON STYLE */
         .pixel-btn {
-          border: 4px solid #100f1f;
-          background: #E2D9F3;
-          color: #2D2B55;
-          cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
           position: relative;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-family: inherit;
+          padding: 0;
+          outline: none;
+          transition: transform 0.1s;
+        }
+
+        .pixel-btn-inner {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 12px;
+          width: 100%;
+          height: 100%;
+          /* The main body color/gradient */
+          background: linear-gradient(to bottom right, var(--btn-light), var(--btn-main));
+          /* The 3D bevel effect */
           box-shadow:
-            inset 4px 4px 0px 0px rgba(255,255,255, 0.8),
-            inset -4px -4px 0px 0px rgba(0,0,0, 0.3);
-          transition: transform 0.05s, box-shadow 0.05s;
-          /* Removed clip-path to support bevel effect */
+            /* Top/Left highlight */
+            inset 4px 4px 0px 0px rgba(255,255,255, 0.4),
+            /* Bottom/Right shadow */
+            inset -4px -4px 0px 0px rgba(0,0,0, 0.3),
+            /* Outer deep shadow for "lift" */
+            0px 6px 0px 0px var(--btn-shadow),
+            0px 8px 8px 0px rgba(0,0,0,0.4);
         }
 
         .pixel-btn:active {
-          transform: translateY(4px);
+          transform: translateY(6px);
+        }
+        .pixel-btn:active .pixel-btn-inner {
           box-shadow:
-            inset 4px 4px 0px 0px rgba(0,0,0, 0.3),
-            inset -4px -4px 0px 0px rgba(255,255,255, 0.8);
+            inset 4px 4px 0px 0px rgba(255,255,255, 0.4),
+            inset -4px -4px 0px 0px rgba(0,0,0, 0.3),
+            0px 0px 0px 0px var(--btn-shadow); /* Shadow disappears */
         }
 
-        .pixel-btn.primary { width: 72px; height: 72px; background: #5DE2E7; color: #1E1C38; }
-        .pixel-btn.secondary { width: 56px; height: 56px; background: #A5A6C5; }
+        /* Button Colors based on Image */
+        /* Secondary (Left/Right): Purple/Greyish */
+        .pixel-btn.secondary {
+          width: 64px; height: 64px;
+          --btn-light: #A5A6C5;
+          --btn-main: #8485A4;
+          --btn-shadow: #5D5E75;
+          color: #2D2B55;
+        }
+
+        /* Primary (Center): Cyan/Teal */
+        .pixel-btn.primary {
+          width: 80px; height: 80px;
+          --btn-light: #6EF3F8;
+          --btn-main: #5DE2E7;
+          --btn-shadow: #3AA9AD;
+          color: #1E1C38;
+        }
+
+        /* Icon styling */
+        .pixel-btn svg {
+          filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2));
+        }
 
         .volume-container {
           display: flex;
@@ -376,7 +430,7 @@ const PixelMusicPlayer = () => {
         
         {isPlaying && (
           <div style={{
-            position: 'absolute', top: '-20px', right: '10px',
+            position: 'absolute', top: '-40px', right: '10px',
             color: '#5DE2E7',
             animation: 'float 2s infinite ease-in-out',
             zIndex: 30
@@ -409,11 +463,17 @@ const PixelMusicPlayer = () => {
 
         <div className="controls">
           <div className="btn-group">
-            <button className="pixel-btn secondary" onClick={prevTrack} aria-label="Previous Track"><PrevIcon /></button>
-            <button className="pixel-btn primary" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
-              {isPlaying ? <PauseIcon /> : <PlayIcon />}
+            <button className="pixel-btn secondary" onClick={prevTrack} aria-label="Previous Track">
+              <div className="pixel-btn-inner"><PrevIcon /></div>
             </button>
-            <button className="pixel-btn secondary" onClick={nextTrack} aria-label="Next Track"><NextIcon /></button>
+            <button className="pixel-btn primary" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
+              <div className="pixel-btn-inner">
+                 {isPlaying ? <PauseIcon /> : <PlayIcon />}
+              </div>
+            </button>
+            <button className="pixel-btn secondary" onClick={nextTrack} aria-label="Next Track">
+              <div className="pixel-btn-inner"><NextIcon /></div>
+            </button>
           </div>
 
           <div className="volume-container">
