@@ -164,23 +164,38 @@ const PixelMusicPlayer = () => {
   );
 
   const PixelNote = () => (
-    <svg width="48" height="48" viewBox="0 0 48 48" style={{ shapeRendering: 'crispEdges' }}>
-      {/* High-res pixelated beamed note */}
-      {/* Beam */}
-      <rect x="8" y="8" width="34" height="6" fill="currentColor" />
-      {/* Stems */}
-      <rect x="8" y="14" width="6" height="22" fill="currentColor" />
-      <rect x="36" y="14" width="6" height="22" fill="currentColor" />
-      {/* Note heads */}
-      <rect x="4" y="32" width="14" height="10" fill="currentColor" />
-      <rect x="32" y="32" width="14" height="10" fill="currentColor" />
+    <svg width="32" height="32" viewBox="0 0 16 16" style={{ shapeRendering: 'crispEdges' }}>
+       {/* Stem */}
+       <rect x="8" y="2" width="2" height="10" fill="currentColor" />
 
-      {/* Pixel detailing */}
-      <rect x="9" y="9" width="32" height="2" fill="rgba(255,255,255,0.3)" />
-      <rect x="9" y="14" width="2" height="22" fill="rgba(255,255,255,0.3)" />
-      <rect x="37" y="14" width="2" height="22" fill="rgba(255,255,255,0.3)" />
-      <rect x="5" y="33" width="4" height="4" fill="rgba(255,255,255,0.3)" />
-      <rect x="33" y="33" width="4" height="4" fill="rgba(255,255,255,0.3)" />
+       {/* Flag */}
+       <rect x="10" y="2" width="2" height="2" fill="currentColor" />
+       <rect x="12" y="3" width="1" height="2" fill="currentColor" />
+       <rect x="12" y="5" width="1" height="1" fill="currentColor" />
+
+       {/* Head */}
+       <rect x="4" y="10" width="6" height="4" fill="currentColor" />
+       <rect x="5" y="9" width="4" height="6" fill="currentColor" />
+    </svg>
+  );
+
+  const PixelMailIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 16 16" style={{ shapeRendering: 'crispEdges' }}>
+      {/* Envelope Body */}
+      <rect x="1" y="4" width="14" height="9" fill="currentColor" />
+      {/* Flap details (simulated with transparent cutouts or color diffs, but simple monochrome here) */}
+      <rect x="2" y="5" width="12" height="7" fill="#F7E987" /> {/* Inner Color matching button light */}
+      <rect x="2" y="5" width="1" height="1" fill="currentColor" />
+      <rect x="3" y="6" width="1" height="1" fill="currentColor" />
+      <rect x="4" y="7" width="1" height="1" fill="currentColor" />
+      <rect x="5" y="8" width="1" height="1" fill="currentColor" />
+      <rect x="6" y="9" width="1" height="1" fill="currentColor" />
+      <rect x="7" y="9" width="2" height="1" fill="currentColor" />
+      <rect x="9" y="9" width="1" height="1" fill="currentColor" />
+      <rect x="10" y="8" width="1" height="1" fill="currentColor" />
+      <rect x="11" y="7" width="1" height="1" fill="currentColor" />
+      <rect x="12" y="6" width="1" height="1" fill="currentColor" />
+      <rect x="13" y="5" width="1" height="1" fill="currentColor" />
     </svg>
   );
 
@@ -191,7 +206,6 @@ const PixelMusicPlayer = () => {
   const VolumeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="currentColor"/></svg>;
   const ArrowUpIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M7 14l5-5 5 5z" fill="currentColor"/></svg>;
   const ArrowDownIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M7 10l5 5 5-5z" fill="currentColor"/></svg>;
-  const MailIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="currentColor"/></svg>;
   const CloseIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg>;
 
   // Prepare text for continuous scrolling
@@ -446,27 +460,55 @@ const PixelMusicPlayer = () => {
           box-sizing: border-box;
           gap: 12px;
         }
+
+        /* UPDATED VOLUME SLIDER CSS */
         input[type=range] {
           -webkit-appearance: none;
           background: transparent;
           width: 100%;
           height: 32px;
         }
+
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none;
-          height: 24px; width: 24px;
-          background: #FF0055;
-          border: 3px solid #FFF;
+          height: 32px; width: 16px;
+          margin-top: -6px; /* center on 20px track */
           cursor: pointer;
-          margin-top: -8px;
-          box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
           image-rendering: pixelated;
+
+          /* Rectangular block thumb design */
+          background: #FF0055;
+          border: none;
+          box-shadow:
+             /* Pixel Border */
+             -2px 0 0 0 #0f0e1c,
+             2px 0 0 0 #0f0e1c,
+             0 -2px 0 0 #0f0e1c,
+             0 2px 0 0 #0f0e1c,
+
+             /* Inner Highlights for gem effect */
+             inset 2px 2px 0 0 rgba(255,255,255,0.4),
+             inset -2px -2px 0 0 rgba(0,0,0,0.2),
+             inset 4px 4px 0 0 rgba(255,255,255,0.2);
         }
+
         input[type=range]::-webkit-slider-runnable-track {
-          width: 100%; height: 8px;
-          background: #4B4D89;
-          border: 2px solid #000;
-          box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5);
+          width: 100%; height: 20px;
+          border-radius: 10px; /* Rounded ends like image */
+          border: 2px solid #0f0e1c;
+
+          /* Segmented track look */
+          background: repeating-linear-gradient(
+            90deg,
+            #F9D923 0,
+            #F9D923 20%,
+            #0f0e1c 20%,
+            #0f0e1c calc(20% + 2px)
+          );
+
+          box-shadow:
+            inset 0 4px 0 0 rgba(255,255,255,0.2),
+            inset 0 -4px 0 0 rgba(0,0,0,0.2);
         }
 
         /* MOOD UI */
@@ -628,7 +670,7 @@ const PixelMusicPlayer = () => {
         
         {isPlaying && (
           <div style={{
-            position: 'absolute', top: '-40px', right: '10px',
+            position: 'absolute', top: '-10px', right: '6px',
             color: '#5DE2E7',
             animation: 'float 2s infinite ease-in-out',
             zIndex: 30
@@ -702,7 +744,7 @@ const PixelMusicPlayer = () => {
             />
             {/* REQUEST BUTTON */}
             <button className="pixel-btn quartary" onClick={() => setShowRequestModal(true)} aria-label="Request Song">
-               <div className="pixel-btn-inner"><MailIcon /></div>
+               <div className="pixel-btn-inner"><PixelMailIcon /></div>
             </button>
           </div>
         </div>
