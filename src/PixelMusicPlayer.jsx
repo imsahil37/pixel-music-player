@@ -1,19 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
+import songData from './songData';
 
 const PixelMusicPlayer = () => {
+  // --- Mood Logic ---
+  const moods = Object.keys(songData);
+  const [currentMood, setCurrentMood] = useState(moods[0]);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const audioRef = useRef(null);
 
-  const tracks = [
-    { title: "Pixel Dreams", artist: "Chiptune Artist", url: "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" },
-    { title: "8-Bit Adventure", artist: "Retro Composer", url: "https://cdn.pixabay.com/audio/2022/03/10/audio_c272755c30.mp3" },
-    { title: "Cozy Pixels", artist: "Lo-Fi Producer", url: "https://cdn.pixabay.com/audio/2022/08/02/audio_884fe05c21.mp3" }
-  ];
+  // Derive tracks from currentMood
+  const tracks = songData[currentMood];
 
-  // --- Logic ---
+  // Reset track index when mood changes
+  useEffect(() => {
+    setCurrentTrack(0);
+    setIsPlaying(false);
+    setProgress(0);
+  }, [currentMood]);
+
+  // --- Audio Logic ---
   useEffect(() => {
     if(audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
@@ -29,7 +37,7 @@ const PixelMusicPlayer = () => {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack]);
+  }, [currentTrack, currentMood]);
 
   const togglePlay = () => {
     if(isPlaying) audioRef.current?.pause();
@@ -47,6 +55,14 @@ const PixelMusicPlayer = () => {
     setCurrentTrack((prev) => (prev - 1 + tracks.length) % tracks.length);
     setIsPlaying(true);
     setTimeout(() => audioRef.current?.play(), 100);
+  };
+
+  const cycleMood = (direction) => {
+    const currentIndex = moods.indexOf(currentMood);
+    let nextIndex = currentIndex + direction;
+    if (nextIndex < 0) nextIndex = moods.length - 1;
+    if (nextIndex >= moods.length) nextIndex = 0;
+    setCurrentMood(moods[nextIndex]);
   };
 
   const handleProgressClick = (e) => {
@@ -144,12 +160,12 @@ const PixelMusicPlayer = () => {
       <rect x="4" y="32" width="14" height="10" fill="currentColor" />
       <rect x="32" y="32" width="14" height="10" fill="currentColor" />
 
-      {/* Pixel detailing (highlights/shadows for "resolution" look) */}
-      <rect x="9" y="9" width="32" height="2" fill="rgba(255,255,255,0.3)" /> {/* Beam highlight */}
-      <rect x="9" y="14" width="2" height="22" fill="rgba(255,255,255,0.3)" /> {/* Stem 1 highlight */}
-      <rect x="37" y="14" width="2" height="22" fill="rgba(255,255,255,0.3)" /> {/* Stem 2 highlight */}
-      <rect x="5" y="33" width="4" height="4" fill="rgba(255,255,255,0.3)" /> {/* Note 1 sheen */}
-      <rect x="33" y="33" width="4" height="4" fill="rgba(255,255,255,0.3)" /> {/* Note 2 sheen */}
+      {/* Pixel detailing */}
+      <rect x="9" y="9" width="32" height="2" fill="rgba(255,255,255,0.3)" />
+      <rect x="9" y="14" width="2" height="22" fill="rgba(255,255,255,0.3)" />
+      <rect x="37" y="14" width="2" height="22" fill="rgba(255,255,255,0.3)" />
+      <rect x="5" y="33" width="4" height="4" fill="rgba(255,255,255,0.3)" />
+      <rect x="33" y="33" width="4" height="4" fill="rgba(255,255,255,0.3)" />
     </svg>
   );
 
@@ -158,6 +174,8 @@ const PixelMusicPlayer = () => {
   const PrevIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" fill="currentColor"/></svg>;
   const NextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" fill="currentColor"/></svg>;
   const VolumeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="currentColor"/></svg>;
+  const ArrowUpIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M7 14l5-5 5 5z" fill="currentColor"/></svg>;
+  const ArrowDownIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" style={{ shapeRendering: 'crispEdges' }}><path d="M7 10l5 5 5-5z" fill="currentColor"/></svg>;
 
   // Prepare text for continuous scrolling
   const marqueeText = `  NOW PLAYING: ${tracks[currentTrack].title} - ${tracks[currentTrack].artist}   +++ \u00A0   `;
@@ -169,6 +187,7 @@ const PixelMusicPlayer = () => {
 
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
         @keyframes scroll { 
           0% { transform: translateX(0); } 
@@ -324,7 +343,7 @@ const PixelMusicPlayer = () => {
           align-items: center;
         }
 
-        /* NEW 3D BUTTON STYLE */
+        /* 3D BUTTON STYLE */
         .pixel-btn {
           position: relative;
           border: none;
@@ -344,15 +363,10 @@ const PixelMusicPlayer = () => {
           border-radius: 12px;
           width: 100%;
           height: 100%;
-          /* The main body color/gradient */
           background: linear-gradient(to bottom right, var(--btn-light), var(--btn-main));
-          /* The 3D bevel effect */
           box-shadow:
-            /* Top/Left highlight */
             inset 4px 4px 0px 0px rgba(255,255,255, 0.4),
-            /* Bottom/Right shadow */
             inset -4px -4px 0px 0px rgba(0,0,0, 0.3),
-            /* Outer deep shadow for "lift" */
             0px 6px 0px 0px var(--btn-shadow),
             0px 8px 8px 0px rgba(0,0,0,0.4);
         }
@@ -364,11 +378,9 @@ const PixelMusicPlayer = () => {
           box-shadow:
             inset 4px 4px 0px 0px rgba(255,255,255, 0.4),
             inset -4px -4px 0px 0px rgba(0,0,0, 0.3),
-            0px 0px 0px 0px var(--btn-shadow); /* Shadow disappears */
+            0px 0px 0px 0px var(--btn-shadow);
         }
 
-        /* Button Colors based on Image */
-        /* Secondary (Left/Right): Purple/Greyish */
         .pixel-btn.secondary {
           width: 64px; height: 64px;
           --btn-light: #A5A6C5;
@@ -377,7 +389,6 @@ const PixelMusicPlayer = () => {
           color: #2D2B55;
         }
 
-        /* Primary (Center): Cyan/Teal */
         .pixel-btn.primary {
           width: 80px; height: 80px;
           --btn-light: #6EF3F8;
@@ -386,7 +397,14 @@ const PixelMusicPlayer = () => {
           color: #1E1C38;
         }
 
-        /* Icon styling */
+        .pixel-btn.tertiary {
+           width: 50px; height: 50px;
+           --btn-light: #FF9E64;
+           --btn-main: #FF702E;
+           --btn-shadow: #CC5500;
+           color: #1E1C38;
+        }
+
         .pixel-btn svg {
           filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2));
         }
@@ -406,7 +424,7 @@ const PixelMusicPlayer = () => {
           -webkit-appearance: none;
           background: transparent;
           width: 100%;
-          height: 32px; /* Large touch area */
+          height: 32px;
         }
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none;
@@ -414,7 +432,7 @@ const PixelMusicPlayer = () => {
           background: #FF0055;
           border: 3px solid #FFF;
           cursor: pointer;
-          margin-top: -8px; /* (Track 8px - Thumb 24px) / 2 = -8px */
+          margin-top: -8px;
           box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
           image-rendering: pixelated;
         }
@@ -424,6 +442,60 @@ const PixelMusicPlayer = () => {
           border: 2px solid #000;
           box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5);
         }
+
+        /* MOOD UI */
+        .mood-section {
+          background: #100f1f;
+          border: 4px solid #4B4D89;
+          padding: 16px;
+          margin-bottom: 24px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .mood-screen {
+          background: #000;
+          padding: 8px 12px;
+          border: 2px solid #333;
+          width: 100%;
+          box-sizing: border-box;
+          text-align: center;
+          color: #2F2;
+          font-family: 'VT323', monospace;
+          text-transform: uppercase;
+          font-size: 20px;
+          box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.2);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .led-indicator {
+           width: 8px; height: 8px;
+           background: #111;
+           border-radius: 50%;
+           box-shadow: 0 0 2px #000;
+        }
+        .led-indicator.on {
+           background: #0F0;
+           box-shadow: 0 0 8px #0F0;
+        }
+
+        .mood-controls {
+           display: flex;
+           align-items: center;
+           gap: 16px;
+           justify-content: center;
+        }
+
+        .mood-label {
+           color: #8485A4;
+           font-size: 14px;
+           letter-spacing: 1px;
+        }
+
       `}</style>
 
       <div className="player-card">
@@ -446,10 +518,28 @@ const PixelMusicPlayer = () => {
           </div>
         </div>
 
+        {/* MOOD SECTION */}
+        <div className="mood-section">
+           <div className="mood-screen">
+              <div className={`led-indicator ${isPlaying ? 'on' : ''}`} style={{ background: '#F00', boxShadow: isPlaying ? '0 0 8px #F00' : 'none' }}></div>
+              <span style={{ margin: '0 8px' }}>MOOD: {currentMood}</span>
+              <div className="led-indicator on"></div>
+           </div>
+
+           <div className="mood-controls">
+              <button className="pixel-btn tertiary" onClick={() => cycleMood(-1)} aria-label="Previous Mood">
+                <div className="pixel-btn-inner"><ArrowUpIcon /></div>
+              </button>
+              <span className="mood-label">CHANNEL</span>
+              <button className="pixel-btn tertiary" onClick={() => cycleMood(1)} aria-label="Next Mood">
+                 <div className="pixel-btn-inner"><ArrowDownIcon /></div>
+              </button>
+           </div>
+        </div>
+
         {/* LED Screen with Continuous Scrolling */}
         <div className="led-screen-container">
           <div className="led-text-wrapper">
-            {/* We duplicate the text to allow seamless looping (0 -> -50%) */}
             <span className="led-text">{marqueeText}</span>
             <span className="led-text">{marqueeText}</span>
           </div>
