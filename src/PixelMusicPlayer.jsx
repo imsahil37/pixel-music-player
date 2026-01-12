@@ -236,6 +236,46 @@ const PixelMusicPlayer = () => {
     };
   }, [currentTrack, moodIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Media Session API for Background Play & Lock Screen Controls
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      const track = tracks[currentTrack];
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track?.title || 'Unknown Title',
+        artist: track?.artist || 'Pixel Player',
+        album: MOODS[moodIndex].label,
+        artwork: [
+          { src: '/favicon.svg', sizes: '96x96', type: 'image/svg+xml' },
+          { src: '/favicon.svg', sizes: '128x128', type: 'image/svg+xml' },
+          { src: '/favicon.svg', sizes: '192x192', type: 'image/svg+xml' },
+          { src: '/favicon.svg', sizes: '256x256', type: 'image/svg+xml' },
+          { src: '/favicon.svg', sizes: '384x384', type: 'image/svg+xml' },
+          { src: '/favicon.svg', sizes: '512x512', type: 'image/svg+xml' },
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        audioRef.current?.play();
+        setIsPlaying(true);
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audioRef.current?.pause();
+        setIsPlaying(false);
+      });
+      navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+      navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+
+      // Clear handlers on unmount/update to avoid stale closures
+      return () => {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.setActionHandler('nexttrack', null);
+      };
+    }
+  }, [currentTrack, moodIndex, tracks]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleProgressClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pos = (e.clientX - rect.left) / rect.width;
