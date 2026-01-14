@@ -246,12 +246,11 @@ const PixelMusicPlayer = () => {
         artist: track?.artist || 'Pixel Player',
         album: MOODS[moodIndex].label,
         artwork: [
-          { src: '/favicon.svg', sizes: '96x96', type: 'image/svg+xml' },
-          { src: '/favicon.svg', sizes: '128x128', type: 'image/svg+xml' },
-          { src: '/favicon.svg', sizes: '192x192', type: 'image/svg+xml' },
-          { src: '/favicon.svg', sizes: '256x256', type: 'image/svg+xml' },
-          { src: '/favicon.svg', sizes: '384x384', type: 'image/svg+xml' },
-          { src: '/favicon.svg', sizes: '512x512', type: 'image/svg+xml' },
+          { src: '/icons/icon-96.webp', sizes: '96x96', type: 'image/webp' },
+          { src: '/icons/icon-128.webp', sizes: '128x128', type: 'image/webp' },
+          { src: '/icons/icon-192.webp', sizes: '192x192', type: 'image/webp' },
+          { src: '/icons/icon-256.webp', sizes: '256x256', type: 'image/webp' },
+          { src: '/icons/icon-512.webp', sizes: '512x512', type: 'image/webp' },
         ]
       });
 
@@ -275,6 +274,12 @@ const PixelMusicPlayer = () => {
       };
     }
   }, [currentTrack, moodIndex, tracks]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+    }
+  }, [isPlaying]);
 
   const handleProgressClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -587,7 +592,11 @@ const PixelMusicPlayer = () => {
             <input 
               type="range" min="0" max="1" step="0.01" 
               value={volume} 
-              onChange={(e) => setVolume(parseFloat(e.target.value))} 
+              onChange={(e) => {
+                const newVol = parseFloat(e.target.value);
+                setVolume(newVol);
+                if(audioRef.current) audioRef.current.volume = newVol;
+              }}
               aria-label="Volume Control"
             />
           </div>
