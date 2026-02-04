@@ -1,0 +1,54 @@
+[
+  {
+    "label": "INTRO",
+    "short": "INT",
+    "tracks": [{ "title": "Intro", "artist": "Buddhu", "url": "/songs/intro.m4a" }]
+  },
+  {
+    "label": "CHATPATE",
+    "short": "CHT",
+    "tracks": [
+      { "title": "Chikni Chameli", "artist": "Buddhu", "url": "/songs/chatpate/chikni chameli.m4a" },
+      { "title": "Mera Nam Mary H", "artist": "Buddhu", "url": "/songs/chatpate/mera nam mary h.m4a" }
+    ]
+  },
+  {
+    "label": "FLIRTING",
+    "short": "FLR",
+    "tracks": [
+      { "title": "Afreen Afreen", "artist": "Buddhu", "url": "/songs/flirting shlirting/afreen afreen.m4a" },
+      { "title": "Mujhe Haq H", "artist": "Buddhu", "url": "/songs/flirting shlirting/mujhe haq h.m4a" }
+    ]
+  },
+  {
+    "label": "RANDOM",
+    "short": "RND",
+    "tracks": [
+      { "title": "Gulabi Aankhein", "artist": "Buddhu", "url": "/songs/random/gulabi aankhein.m4a" },
+      { "title": "Love Dose", "artist": "Buddhu", "url": "/songs/random/love dose.m4a" }
+    ]
+  },
+  {
+    "label": "ANGRY",
+    "short": "ANG",
+    "tracks": [
+      { "title": "Acha Ji Mai Haari", "artist": "Buddhu", "url": "/songs/mai gussa hu/acha ji mai haari.m4a" },
+      { "title": "Tu Hai To", "artist": "Buddhu", "url": "/songs/mai gussa hu/tu hai to.m4a" }
+    ]
+  },
+  {
+    "label": "SUKOON",
+    "short": "SUK",
+    "tracks": [
+      { "title": "Bade Ache Lgte H", "artist": "Buddhu", "url": "/songs/sukoon/bade ache lgte h.m4a" }
+    ]
+  },
+  {
+    "label": "MISSING",
+    "short": "MIS",
+    "tracks": [
+      { "title": "Hey There Delilah", "artist": "Buddhu", "url": "/songs/yad aa rhi h/hey there delilah.m4a" },
+      { "title": "I'll Miss U", "artist": "Buddhu", "url": "/songs/yad aa rhi h/i'll miss u.m4a" }
+    ]
+  }
+]

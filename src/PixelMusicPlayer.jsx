@@ -123,8 +123,63 @@ const HighResVolumeIcon = ({ vol }) => (
   </svg>
 );
 
+const DEFAULT_MOODS = [
+  {
+    label: "INTRO",
+    short: "INT",
+    tracks: [{ title: "Intro", artist: "Buddhu", url: "/songs/intro.m4a" }]
+  },
+  {
+    label: "CHATPATE",
+    short: "CHT",
+    tracks: [
+      { title: "Chikni Chameli", artist: "Buddhu", url: "/songs/chatpate/chikni chameli.m4a" },
+      { title: "Mera Nam Mary H", artist: "Buddhu", url: "/songs/chatpate/mera nam mary h.m4a" }
+    ]
+  },
+  {
+    label: "FLIRTING",
+    short: "FLR",
+    tracks: [
+      { title: "Afreen Afreen", artist: "Buddhu", url: "/songs/flirting shlirting/afreen afreen.m4a" },
+      { title: "Mujhe Haq H", artist: "Buddhu", url: "/songs/flirting shlirting/mujhe haq h.m4a" }
+    ]
+  },
+  {
+    label: "RANDOM",
+    short: "RND",
+    tracks: [
+      { title: "Gulabi Aankhein", artist: "Buddhu", url: "/songs/random/gulabi aankhein.m4a" },
+      { title: "Love Dose", artist: "Buddhu", url: "/songs/random/love dose.m4a" }
+    ]
+  },
+  {
+    label: "ANGRY",
+    short: "ANG",
+    tracks: [
+      { title: "Acha Ji Mai Haari", artist: "Buddhu", url: "/songs/mai gussa hu/acha ji mai haari.m4a" },
+      { title: "Tu Hai To", artist: "Buddhu", url: "/songs/mai gussa hu/tu hai to.m4a" }
+    ]
+  },
+  {
+    label: "SUKOON",
+    short: "SUK",
+    tracks: [
+      { title: "Bade Ache Lgte H", artist: "Buddhu", url: "/songs/sukoon/bade ache lgte h.m4a" }
+    ]
+  },
+  {
+    label: "MISSING",
+    short: "MIS",
+    tracks: [
+      { title: "Hey There Delilah", artist: "Buddhu", url: "/songs/yad aa rhi h/hey there delilah.m4a" },
+      { title: "I'll Miss U", artist: "Buddhu", url: "/songs/yad aa rhi h/i'll miss u.m4a" }
+    ]
+  }
+];
 
 const PixelMusicPlayer = () => {
+  const [moods, setMoods] = useState(null);
   const [moodIndex, setMoodIndex] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -132,64 +187,84 @@ const PixelMusicPlayer = () => {
   const [volume, setVolume] = useState(0.7);
   const [requestText, setRequestText] = useState("");
   const [requestStatus, setRequestStatus] = useState("idle");
+  const [isLoading, setIsLoading] = useState(true);
+  const [ledOverride, setLedOverride] = useState(null);
   const audioRef = useRef(null);
+  const ledTimeoutRef = useRef(null);
 
-  const MOODS = [
-    {
-      label: "INTRO",
-      short: "INT",
-      tracks: [{ title: "Intro", artist: "Buddhu", url: "/songs/intro.m4a" }]
-    },
-    {
-      label: "CHATPATE",
-      short: "CHT",
-      tracks: [
-        { title: "Chikni Chameli", artist: "Buddhu", url: "/songs/chatpate/chikni chameli.m4a" },
-        { title: "Mera Nam Mary H", artist: "Buddhu", url: "/songs/chatpate/mera nam mary h.m4a" }
-      ]
-    },
-    {
-      label: "FLIRTING",
-      short: "FLR",
-      tracks: [
-        { title: "Afreen Afreen", artist: "Buddhu", url: "/songs/flirting shlirting/afreen afreen.m4a" },
-        { title: "Mujhe Haq H", artist: "Buddhu", url: "/songs/flirting shlirting/mujhe haq h.m4a" }
-      ]
-    },
-    {
-      label: "NO BAKBAK",
-      short: "NOB",
-      tracks: [
-        { title: "Gulabi Aankhein", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/gulabi aankhein.m4a" },
-        { title: "Love Dose", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/love dose.m4a" }
-      ]
-    },
-    {
-      label: "ANGRY",
-      short: "ANG",
-      tracks: [
-        { title: "Acha Ji Mai Haari", artist: "Buddhu", url: "/songs/mai gussa hu/acha ji mai haari.m4a" },
-        { title: "Tu Hai To", artist: "Buddhu", url: "/songs/mai gussa hu/tu hai to.m4a" }
-      ]
-    },
-    {
-      label: "SUKOON",
-      short: "SUK",
-      tracks: [
-        { title: "Bade Ache Lgte H", artist: "Buddhu", url: "/songs/sukoon/bade ache lgte h.m4a" }
-      ]
-    },
-    {
-      label: "MISSING",
-      short: "MIS",
-      tracks: [
-        { title: "Hey There Delilah", artist: "Buddhu", url: "/songs/yad aa rhi h/hey there delilah.m4a" },
-        { title: "I'll Miss U", artist: "Buddhu", url: "/songs/yad aa rhi h/i'll miss u.m4a" }
-      ]
+  // Fetch logic
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Try to fetch from remote GitHub Pages first
+        let response = await fetch('https://imsahil37.github.io/pixel-mixtape-data/music_config.json');
+
+        // If remote fails, fallback to local
+        if (!response.ok) {
+           console.log("Remote config not found, checking local...");
+           response = await fetch('/music_config.json');
+        }
+
+        if (!response.ok) throw new Error("Failed to fetch config");
+
+        const data = await response.json();
+        const baseUrl = 'https://imsahil37.github.io/pixel-mixtape-data';
+
+        // Normalize URLs: if a URL is relative and we fetched from remote, prepend the base URL
+        const normalizedData = data.map(mood => ({
+          ...mood,
+          tracks: mood.tracks.map(track => {
+            if (track.url.startsWith('http')) return track; // Already absolute
+            if (track.url.startsWith('/')) return { ...track, url: `${baseUrl}${track.url}` }; // Absolute path relative to domain
+            return { ...track, url: `${baseUrl}/${track.url}` }; // Relative path
+          })
+        }));
+
+        setMoods(prev => {
+           if(prev) {
+             const oldTracks = prev.reduce((acc, m) => acc + m.tracks.length, 0);
+             const newTracks = normalizedData.reduce((acc, m) => acc + m.tracks.length, 0);
+             if(newTracks !== oldTracks) {
+                setLedOverride("*** NEW DATA RECEIVED ***");
+                if(ledTimeoutRef.current) clearTimeout(ledTimeoutRef.current);
+                ledTimeoutRef.current = setTimeout(() => setLedOverride(null), 4000);
+             }
+           }
+
+           // Silently pre-fetch (cache) all audio files
+           normalizedData.forEach(mood => {
+             mood.tracks.forEach(track => {
+               fetch(track.url, { mode: 'no-cors' }).catch(() => {});
+             });
+           });
+
+           return normalizedData;
+        });
+        setIsLoading(false);
+      } catch (e) {
+        console.error("Fetch error:", e);
+        if(!moods) {
+           setMoods(DEFAULT_MOODS);
+           setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData(); // Initial load
+
+    const interval = setInterval(fetchData, 60000); // Poll every minute
+    return () => clearInterval(interval);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Safety check for moodIndex when data changes
+  useEffect(() => {
+    if (moods && moodIndex >= moods.length) {
+      setMoodIndex(0);
+      setCurrentTrack(0);
     }
-  ];
+  }, [moods, moodIndex]);
 
-  const tracks = MOODS[moodIndex].tracks;
+  const tracks = (moods && moods[moodIndex]) ? moods[moodIndex].tracks : [];
 
   const togglePlay = () => {
     if(isPlaying) audioRef.current?.pause();
@@ -210,9 +285,10 @@ const PixelMusicPlayer = () => {
   };
 
   const changeMood = (direction) => {
+    if(!moods) return;
     let newIndex = moodIndex + direction;
-    if (newIndex < 0) newIndex = MOODS.length - 1;
-    if (newIndex >= MOODS.length) newIndex = 0;
+    if (newIndex < 0) newIndex = moods.length - 1;
+    if (newIndex >= moods.length) newIndex = 0;
     setMoodIndex(newIndex);
     setCurrentTrack(0);
     setProgress(0);
@@ -234,7 +310,52 @@ const PixelMusicPlayer = () => {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, moodIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentTrack, moodIndex, moods]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Media Session API for Background Play & Lock Screen Controls
+  useEffect(() => {
+    if ('mediaSession' in navigator && moods) {
+      const track = tracks[currentTrack];
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track?.title || 'Unknown Title',
+        artist: track?.artist || 'Pixel Player',
+        album: moods[moodIndex].label,
+        artwork: [
+          { src: '/icons/icon-96.webp', sizes: '96x96', type: 'image/webp' },
+          { src: '/icons/icon-128.webp', sizes: '128x128', type: 'image/webp' },
+          { src: '/icons/icon-192.webp', sizes: '192x192', type: 'image/webp' },
+          { src: '/icons/icon-256.webp', sizes: '256x256', type: 'image/webp' },
+          { src: '/icons/icon-512.webp', sizes: '512x512', type: 'image/webp' },
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        audioRef.current?.play();
+        setIsPlaying(true);
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audioRef.current?.pause();
+        setIsPlaying(false);
+      });
+      navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+      navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+
+      // Clear handlers on unmount/update to avoid stale closures
+      return () => {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.setActionHandler('nexttrack', null);
+      };
+    }
+  }, [currentTrack, moodIndex, tracks, moods]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+    }
+  }, [isPlaying]);
 
   const handleProgressClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -277,7 +398,30 @@ const PixelMusicPlayer = () => {
     if (e.key === 'Enter') submitRequest();
   };
 
-  const marqueeText = `  MOOD: ${MOODS[moodIndex].label}  +++  NOW PLAYING: ${tracks[currentTrack]?.title} - ${tracks[currentTrack]?.artist}   +++ \u00A0   `;
+  const handleVolumeChange = (e) => {
+    const newVol = parseFloat(e.target.value);
+    setVolume(newVol);
+    if(audioRef.current) audioRef.current.volume = newVol;
+
+    // Override LED with volume bar
+    const bars = 10;
+    const filled = Math.round(newVol * bars);
+    const barStr = `VOL: ${'■'.repeat(filled)}${'□'.repeat(bars - filled)}`;
+    setLedOverride(barStr);
+
+    if(ledTimeoutRef.current) clearTimeout(ledTimeoutRef.current);
+    ledTimeoutRef.current = setTimeout(() => setLedOverride(null), 2000);
+  };
+
+  // Marquee Logic
+  let displayText = "";
+  if (ledOverride) {
+     displayText = `  ${ledOverride}  `;
+  } else if (moods) {
+     displayText = `  MOOD: ${moods[moodIndex].label}  +++  NOW PLAYING: ${tracks[currentTrack]?.title} - ${tracks[currentTrack]?.artist}   +++ \u00A0   `;
+  } else {
+     displayText = "  ...INITIALIZING...  ";
+  }
 
   return (
     <div className="pixel-player-container">
@@ -287,6 +431,9 @@ const PixelMusicPlayer = () => {
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        /* Jitter relative to the already rotated position (0deg in local space) */
+        @keyframes jitter { 0% { transform: translate(0, 0) rotate(0deg); } 25% { transform: translate(1px, 0) rotate(0.5deg); } 50% { transform: translate(0, 1px) rotate(-0.5deg); } 75% { transform: translate(-1px, 0) rotate(0.2deg); } 100% { transform: translate(0, 0) rotate(0deg); } }
+        @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         body, html {
           margin: 0; padding: 0; background-color: #2D2B55;
@@ -316,6 +463,12 @@ const PixelMusicPlayer = () => {
           z-index: 20; transform-origin: 32px 12px; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .loading-screen {
+          width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+          flex-direction: column; color: #5DE2E7; text-shadow: 0 0 5px #5DE2E7;
+          animation: flicker 0.2s infinite; font-size: 24px;
+        }
+
         .led-screen-container {
           background-color: #100505; border: 4px solid #151329; height: 50px; margin-bottom: 24px;
           position: relative; overflow: hidden; display: flex; align-items: center;
@@ -327,9 +480,9 @@ const PixelMusicPlayer = () => {
         }
 
         .led-text {
-          font-family: 'VT323', monospace; font-size: 28px; color: #FF5500;
-          text-shadow: 0 0 4px rgba(255, 85, 0, 0.6), 0 0 8px rgba(255, 85, 0, 0.4);
-          letter-spacing: 2px; text-transform: uppercase;
+          font-family: 'VT323', monospace; font-size: 24px; color: #FF5500;
+          text-shadow: 0 0 2px rgba(255, 85, 0, 0.8), 0 0 4px rgba(255, 85, 0, 0.5);
+          letter-spacing: 3px; text-transform: uppercase;
         }
 
         .led-scanlines {
@@ -497,17 +650,33 @@ const PixelMusicPlayer = () => {
         )}
 
         <div className="turntable-wrapper">
-          <PixelRecord isSpinning={isPlaying} />
-          <div className="tonearm-assembly" style={{ transform: isPlaying ? 'rotate(25deg)' : 'rotate(0deg)' }}>
-             <PixelTonearm />
-          </div>
+          {isLoading ? (
+            <div className="loading-screen">
+               <div>LOADING TRACKS...</div>
+               <div style={{ fontSize: '14px', marginTop: '8px' }}>PLEASE WAIT</div>
+            </div>
+          ) : (
+            <>
+              <PixelRecord isSpinning={isPlaying} />
+              <div
+                className="tonearm-assembly"
+                style={{
+                  transform: isPlaying ? 'rotate(25deg)' : 'rotate(0deg)',
+                }}
+              >
+                 <div style={{ animation: isPlaying ? 'jitter 0.5s infinite linear' : 'none' }}>
+                   <PixelTonearm />
+                 </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* LED Screen */}
         <div className="led-screen-container">
           <div className="led-text-wrapper">
-            <span className="led-text">{marqueeText}</span>
-            <span className="led-text">{marqueeText}</span>
+            <span className="led-text">{displayText}</span>
+            <span className="led-text">{displayText}</span>
           </div>
           <div className="led-scanlines"></div>
           <div className="led-glare"></div>
@@ -517,10 +686,15 @@ const PixelMusicPlayer = () => {
         <div className="mood-section">
            <button className="pixel-btn mood" onClick={() => changeMood(-1)} aria-label="Previous Mood"><MoodPrevIcon /></button>
            <div className="led-group">
-             {MOODS.map((mood, idx) => (
+             {moods ? moods.map((mood, idx) => (
                <div key={idx} className="led-container">
                  <div className={`vintage-led ${idx === moodIndex ? 'active' : ''}`} />
                  <span className={`led-label ${idx === moodIndex ? 'active' : ''}`}>{mood.short}</span>
+               </div>
+             )) : DEFAULT_MOODS.map((mood, idx) => (
+                <div key={idx} className="led-container">
+                 <div className="vintage-led" />
+                 <span className="led-label">{mood.short}</span>
                </div>
              ))}
            </div>
@@ -547,7 +721,7 @@ const PixelMusicPlayer = () => {
             <input 
               type="range" min="0" max="1" step="0.01" 
               value={volume} 
-              onChange={(e) => setVolume(parseFloat(e.target.value))} 
+              onChange={handleVolumeChange}
               aria-label="Volume Control"
             />
           </div>
