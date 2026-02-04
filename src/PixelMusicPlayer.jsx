@@ -431,7 +431,8 @@ const PixelMusicPlayer = () => {
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        @keyframes jitter { 0% { transform: rotate(25deg) translate(0, 0); } 25% { transform: rotate(25.5deg) translate(1px, 0); } 50% { transform: rotate(24.5deg) translate(0, 1px); } 75% { transform: rotate(25.2deg) translate(-1px, 0); } 100% { transform: rotate(25deg) translate(0, 0); } }
+        /* Jitter relative to the already rotated position (0deg in local space) */
+        @keyframes jitter { 0% { transform: translate(0, 0) rotate(0deg); } 25% { transform: translate(1px, 0) rotate(0.5deg); } 50% { transform: translate(0, 1px) rotate(-0.5deg); } 75% { transform: translate(-1px, 0) rotate(0.2deg); } 100% { transform: translate(0, 0) rotate(0deg); } }
         @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         body, html {
@@ -661,10 +662,11 @@ const PixelMusicPlayer = () => {
                 className="tonearm-assembly"
                 style={{
                   transform: isPlaying ? 'rotate(25deg)' : 'rotate(0deg)',
-                  animation: isPlaying ? 'jitter 0.5s infinite linear' : 'none'
                 }}
               >
-                 <PixelTonearm />
+                 <div style={{ animation: isPlaying ? 'jitter 0.5s infinite linear' : 'none' }}>
+                   <PixelTonearm />
+                 </div>
               </div>
             </>
           )}
