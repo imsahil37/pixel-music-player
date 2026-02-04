@@ -228,7 +228,15 @@ const PixelMusicPlayer = () => {
     return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const tracks = moods ? moods[moodIndex].tracks : [];
+  // Safety check for moodIndex when data changes
+  useEffect(() => {
+    if (moods && moodIndex >= moods.length) {
+      setMoodIndex(0);
+      setCurrentTrack(0);
+    }
+  }, [moods, moodIndex]);
+
+  const tracks = (moods && moods[moodIndex]) ? moods[moodIndex].tracks : [];
 
   const togglePlay = () => {
     if(isPlaying) audioRef.current?.pause();
