@@ -123,8 +123,63 @@ const HighResVolumeIcon = ({ vol }) => (
   </svg>
 );
 
+const FALLBACK_MOODS = [
+  {
+    label: "INTRO",
+    short: "INT",
+    tracks: [{ title: "Intro", artist: "Buddhu", url: "/songs/intro.m4a" }]
+  },
+  {
+    label: "CHATPATE",
+    short: "CHT",
+    tracks: [
+      { title: "Chikni Chameli", artist: "Buddhu", url: "/songs/chatpate/chikni chameli.m4a" },
+      { title: "Mera Nam Mary H", artist: "Buddhu", url: "/songs/chatpate/mera nam mary h.m4a" }
+    ]
+  },
+  {
+    label: "FLIRTING",
+    short: "FLR",
+    tracks: [
+      { title: "Afreen Afreen", artist: "Buddhu", url: "/songs/flirting shlirting/afreen afreen.m4a" },
+      { title: "Mujhe Haq H", artist: "Buddhu", url: "/songs/flirting shlirting/mujhe haq h.m4a" }
+    ]
+  },
+  {
+    label: "NO BAKBAK",
+    short: "NOB",
+    tracks: [
+      { title: "Gulabi Aankhein", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/gulabi aankhein.m4a" },
+      { title: "Love Dose", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/love dose.m4a" }
+    ]
+  },
+  {
+    label: "ANGRY",
+    short: "ANG",
+    tracks: [
+      { title: "Acha Ji Mai Haari", artist: "Buddhu", url: "/songs/mai gussa hu/acha ji mai haari.m4a" },
+      { title: "Tu Hai To", artist: "Buddhu", url: "/songs/mai gussa hu/tu hai to.m4a" }
+    ]
+  },
+  {
+    label: "SUKOON",
+    short: "SUK",
+    tracks: [
+      { title: "Bade Ache Lgte H", artist: "Buddhu", url: "/songs/sukoon/bade ache lgte h.m4a" }
+    ]
+  },
+  {
+    label: "MISSING",
+    short: "MIS",
+    tracks: [
+      { title: "Hey There Delilah", artist: "Buddhu", url: "/songs/yad aa rhi h/hey there delilah.m4a" },
+      { title: "I'll Miss U", artist: "Buddhu", url: "/songs/yad aa rhi h/i'll miss u.m4a" }
+    ]
+  }
+];
 
 const PixelMusicPlayer = () => {
+  const [moods, setMoods] = useState(FALLBACK_MOODS);
   const [moodIndex, setMoodIndex] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -132,64 +187,46 @@ const PixelMusicPlayer = () => {
   const [volume, setVolume] = useState(0.7);
   const [requestText, setRequestText] = useState("");
   const [requestStatus, setRequestStatus] = useState("idle");
+  const [isLoading, setIsLoading] = useState(true);
+  const [showVolumeOverlay, setShowVolumeOverlay] = useState(false);
+  const [newDataNotification, setNewDataNotification] = useState(false);
+
   const audioRef = useRef(null);
+  const volumeTimeoutRef = useRef(null);
+  const prevTrackCountRef = useRef(-1);
 
-  const MOODS = [
-    {
-      label: "INTRO",
-      short: "INT",
-      tracks: [{ title: "Intro", artist: "Buddhu", url: "/songs/intro.m4a" }]
-    },
-    {
-      label: "CHATPATE",
-      short: "CHT",
-      tracks: [
-        { title: "Chikni Chameli", artist: "Buddhu", url: "/songs/chatpate/chikni chameli.m4a" },
-        { title: "Mera Nam Mary H", artist: "Buddhu", url: "/songs/chatpate/mera nam mary h.m4a" }
-      ]
-    },
-    {
-      label: "FLIRTING",
-      short: "FLR",
-      tracks: [
-        { title: "Afreen Afreen", artist: "Buddhu", url: "/songs/flirting shlirting/afreen afreen.m4a" },
-        { title: "Mujhe Haq H", artist: "Buddhu", url: "/songs/flirting shlirting/mujhe haq h.m4a" }
-      ]
-    },
-    {
-      label: "NO BAKBAK",
-      short: "NOB",
-      tracks: [
-        { title: "Gulabi Aankhein", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/gulabi aankhein.m4a" },
-        { title: "Love Dose", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/love dose.m4a" }
-      ]
-    },
-    {
-      label: "ANGRY",
-      short: "ANG",
-      tracks: [
-        { title: "Acha Ji Mai Haari", artist: "Buddhu", url: "/songs/mai gussa hu/acha ji mai haari.m4a" },
-        { title: "Tu Hai To", artist: "Buddhu", url: "/songs/mai gussa hu/tu hai to.m4a" }
-      ]
-    },
-    {
-      label: "SUKOON",
-      short: "SUK",
-      tracks: [
-        { title: "Bade Ache Lgte H", artist: "Buddhu", url: "/songs/sukoon/bade ache lgte h.m4a" }
-      ]
-    },
-    {
-      label: "MISSING",
-      short: "MIS",
-      tracks: [
-        { title: "Hey There Delilah", artist: "Buddhu", url: "/songs/yad aa rhi h/hey there delilah.m4a" },
-        { title: "I'll Miss U", artist: "Buddhu", url: "/songs/yad aa rhi h/i'll miss u.m4a" }
-      ]
-    }
-  ];
+  useEffect(() => {
+    const fetchMoods = async () => {
+      try {
+        const response = await fetch("https://your-server.com/music_config.json");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setMoods(data);
 
-  const tracks = MOODS[moodIndex].tracks;
+        const totalTracks = data.reduce((acc, mood) => acc + mood.tracks.length, 0);
+        if (prevTrackCountRef.current !== -1 && prevTrackCountRef.current !== totalTracks) {
+          setNewDataNotification(true);
+          setTimeout(() => setNewDataNotification(false), 5000);
+        }
+        prevTrackCountRef.current = totalTracks;
+
+      } catch (error) {
+        console.error("Failed to fetch moods, using fallback", error);
+        setMoods(FALLBACK_MOODS);
+
+        const totalTracks = FALLBACK_MOODS.reduce((acc, mood) => acc + mood.tracks.length, 0);
+        prevTrackCountRef.current = totalTracks;
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMoods();
+  }, []);
+
+  const tracks = moods[moodIndex]?.tracks || [];
 
   const togglePlay = () => {
     if(isPlaying) audioRef.current?.pause();
@@ -210,9 +247,10 @@ const PixelMusicPlayer = () => {
   };
 
   const changeMood = (direction) => {
+    if (moods.length === 0) return;
     let newIndex = moodIndex + direction;
-    if (newIndex < 0) newIndex = MOODS.length - 1;
-    if (newIndex >= MOODS.length) newIndex = 0;
+    if (newIndex < 0) newIndex = moods.length - 1;
+    if (newIndex >= moods.length) newIndex = 0;
     setMoodIndex(newIndex);
     setCurrentTrack(0);
     setProgress(0);
@@ -221,7 +259,15 @@ const PixelMusicPlayer = () => {
 
   useEffect(() => {
     if(audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
+
+    if (!isLoading) {
+      setShowVolumeOverlay(true);
+      if (volumeTimeoutRef.current) clearTimeout(volumeTimeoutRef.current);
+      volumeTimeoutRef.current = setTimeout(() => {
+        setShowVolumeOverlay(false);
+      }, 2000);
+    }
+  }, [volume, isLoading]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -234,7 +280,7 @@ const PixelMusicPlayer = () => {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, moodIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentTrack, moodIndex, moods]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleProgressClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -277,7 +323,21 @@ const PixelMusicPlayer = () => {
     if (e.key === 'Enter') submitRequest();
   };
 
-  const marqueeText = `  MOOD: ${MOODS[moodIndex].label}  +++  NOW PLAYING: ${tracks[currentTrack]?.title} - ${tracks[currentTrack]?.artist}   +++ \u00A0   `;
+  const getVolumeBar = (vol) => {
+    const total = 10;
+    const filled = Math.round(vol * total);
+    const empty = total - filled;
+    return 'VOL: ' + '■'.repeat(filled) + '□'.repeat(empty);
+  };
+
+  let marqueeText = `  MOOD: ${moods[moodIndex]?.label || "..."}  +++  NOW PLAYING: ${tracks[currentTrack]?.title} - ${tracks[currentTrack]?.artist}   +++ \u00A0   `;
+  if (isLoading) {
+    marqueeText = "LOADING TRACKS...   LOADING TRACKS...   ";
+  } else if (showVolumeOverlay) {
+    marqueeText = getVolumeBar(volume);
+  } else if (newDataNotification) {
+    marqueeText = "*** NEW DATA RECEIVED ***   *** NEW DATA RECEIVED ***   ";
+  }
 
   return (
     <div className="pixel-player-container">
@@ -287,6 +347,8 @@ const PixelMusicPlayer = () => {
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        @keyframes jitter { 0% { transform: rotate(0deg); } 25% { transform: rotate(0.4deg); } 75% { transform: rotate(-0.4deg); } 100% { transform: rotate(0deg); } }
 
         body, html {
           margin: 0; padding: 0; background-color: #2D2B55;
@@ -330,6 +392,10 @@ const PixelMusicPlayer = () => {
           font-family: 'VT323', monospace; font-size: 28px; color: #FF5500;
           text-shadow: 0 0 4px rgba(255, 85, 0, 0.6), 0 0 8px rgba(255, 85, 0, 0.4);
           letter-spacing: 2px; text-transform: uppercase;
+        }
+
+        .led-text.flicker {
+          animation: flicker 0.8s infinite;
         }
 
         .led-scanlines {
@@ -499,15 +565,17 @@ const PixelMusicPlayer = () => {
         <div className="turntable-wrapper">
           <PixelRecord isSpinning={isPlaying} />
           <div className="tonearm-assembly" style={{ transform: isPlaying ? 'rotate(25deg)' : 'rotate(0deg)' }}>
-             <PixelTonearm />
+             <div style={{ width: '100%', height: '100%', animation: isPlaying ? 'jitter 0.2s infinite linear' : 'none' }}>
+               <PixelTonearm />
+             </div>
           </div>
         </div>
 
         {/* LED Screen */}
         <div className="led-screen-container">
           <div className="led-text-wrapper">
-            <span className="led-text">{marqueeText}</span>
-            <span className="led-text">{marqueeText}</span>
+            <span className={`led-text ${isLoading ? 'flicker' : ''}`}>{marqueeText}</span>
+            <span className={`led-text ${isLoading ? 'flicker' : ''}`}>{marqueeText}</span>
           </div>
           <div className="led-scanlines"></div>
           <div className="led-glare"></div>
@@ -517,7 +585,7 @@ const PixelMusicPlayer = () => {
         <div className="mood-section">
            <button className="pixel-btn mood" onClick={() => changeMood(-1)} aria-label="Previous Mood"><MoodPrevIcon /></button>
            <div className="led-group">
-             {MOODS.map((mood, idx) => (
+             {moods.map((mood, idx) => (
                <div key={idx} className="led-container">
                  <div className={`vintage-led ${idx === moodIndex ? 'active' : ''}`} />
                  <span className={`led-label ${idx === moodIndex ? 'active' : ''}`}>{mood.short}</span>
