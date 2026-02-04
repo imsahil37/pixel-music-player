@@ -146,11 +146,11 @@ const DEFAULT_MOODS = [
     ]
   },
   {
-    label: "NO BAKBAK",
-    short: "NOB",
+    label: "RANDOM",
+    short: "RND",
     tracks: [
-      { title: "Gulabi Aankhein", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/gulabi aankhein.m4a" },
-      { title: "Love Dose", artist: "Buddhu", url: "/songs/koi bakbak sunne ko nhi h/love dose.m4a" }
+      { title: "Gulabi Aankhein", artist: "Buddhu", url: "/songs/random/gulabi aankhein.m4a" },
+      { title: "Love Dose", artist: "Buddhu", url: "/songs/random/love dose.m4a" }
     ]
   },
   {
@@ -230,6 +230,14 @@ const PixelMusicPlayer = () => {
                 ledTimeoutRef.current = setTimeout(() => setLedOverride(null), 4000);
              }
            }
+
+           // Silently pre-fetch (cache) all audio files
+           normalizedData.forEach(mood => {
+             mood.tracks.forEach(track => {
+               fetch(track.url, { mode: 'no-cors' }).catch(() => {});
+             });
+           });
+
            return normalizedData;
         });
         setIsLoading(false);
@@ -471,9 +479,9 @@ const PixelMusicPlayer = () => {
         }
 
         .led-text {
-          font-family: 'VT323', monospace; font-size: 28px; color: #FF5500;
-          text-shadow: 0 0 4px rgba(255, 85, 0, 0.6), 0 0 8px rgba(255, 85, 0, 0.4);
-          letter-spacing: 2px; text-transform: uppercase;
+          font-family: 'VT323', monospace; font-size: 24px; color: #FF5500;
+          text-shadow: 0 0 2px rgba(255, 85, 0, 0.8), 0 0 4px rgba(255, 85, 0, 0.5);
+          letter-spacing: 3px; text-transform: uppercase;
         }
 
         .led-scanlines {

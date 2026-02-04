@@ -21,11 +21,11 @@
     ]
   },
   {
-    "label": "NO BAKBAK",
-    "short": "NOB",
+    "label": "RANDOM",
+    "short": "RND",
     "tracks": [
-      { "title": "Gulabi Aankhein", "artist": "Buddhu", "url": "/songs/koi bakbak sunne ko nhi h/gulabi aankhein.m4a" },
-      { "title": "Love Dose", "artist": "Buddhu", "url": "/songs/koi bakbak sunne ko nhi h/love dose.m4a" }
+      { "title": "Gulabi Aankhein", "artist": "Buddhu", "url": "/songs/random/gulabi aankhein.m4a" },
+      { "title": "Love Dose", "artist": "Buddhu", "url": "/songs/random/love dose.m4a" }
     ]
   },
   {
