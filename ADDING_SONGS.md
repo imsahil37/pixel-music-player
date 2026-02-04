@@ -1,63 +1,45 @@
-# How to Add New Songs
+# How to Add New Songs (Without Updating the App)
 
-Adding new songs to the Pixel Music Player is a two-step process. You need to add the audio file to the project and then tell the player where to find it.
+The app is configured to load the playlist from a remote GitHub Pages repository. This allows you to add new songs for the user without them needing to install a new APK update.
 
-## Step 1: Add the Audio File
+**Remote URL:** `https://imsahil37.github.io/pixel-mixtape-data/`
 
-1.  Navigate to the `public/songs` directory in your project folder.
-2.  Choose the appropriate mood folder (e.g., `chatpate`, `sukoon`, etc.) or create a new one.
-3.  **Copy your audio file** (MP3, M4A, etc.) into that folder.
-    *   *Tip: Keep filenames simple and lowercase (e.g., `my-new-song.mp3`).*
+## Prerequisites
 
-## Step 2: Update the Configuration
+You must have access to the GitHub repository that hosts `pixel-mixtape-data`.
 
-1.  Open the file `public/music_config.json` in a text editor.
-2.  Find the "Mood" section where you want to add the song.
-3.  Add a new entry to the `tracks` list for that mood.
+## Step-by-Step Guide
 
-**Example:**
+1.  **Prepare the Audio File:**
+    -   Ensure your song file (MP3/M4A) is ready.
+    -   Name it simply (e.g., `new-song.mp3`).
 
-If you added `kal-ho-naa-ho.mp3` to the `sukoon` folder, your JSON should look like this:
+2.  **Upload to GitHub:**
+    -   Go to your `pixel-mixtape-data` GitHub repository.
+    -   Upload the audio file to the `songs/` folder (or create a subfolder like `songs/party/`).
 
-```json
-{
-  "label": "SUKOON",
-  "short": "SUK",
-  "tracks": [
+3.  **Update `music_config.json`:**
+    -   Edit the `music_config.json` file in that *same* GitHub repository.
+    -   Add the new track entry. Use the relative path to where you uploaded the file.
+
+    ```json
     {
-      "title": "Bade Ache Lgte H",
-      "artist": "Buddhu",
-      "url": "/songs/sukoon/bade ache lgte h.m4a"
-    },
-    {
-      "title": "Kal Ho Naa Ho",
-      "artist": "Sonu Nigam",
-      "url": "/songs/sukoon/kal-ho-naa-ho.mp3"
+      "title": "New Song Name",
+      "artist": "Artist Name",
+      "url": "/songs/party/new-song.mp3"
     }
-  ]
-}
-```
+    ```
 
-## Step 3: Apply Changes
+4.  **Commit Changes:**
+    -   Save/Commit your changes to the GitHub repository.
 
-*   **If running locally (`npm run dev`):** The player might update automatically, or you may need to refresh the page.
-*   **For the Android App:**
-    1.  Run `npm run build` to package the new config and songs.
-    2.  Run `npx cap sync` to copy them to the Android project.
-    3.  Re-build/Re-install the app on your phone.
+5.  **Wait for Deployment:**
+    -   GitHub Pages usually takes 1-2 minutes to update.
+    -   Once deployed, the app (on the user's phone) will automatically detect the new data within ~60 seconds (or on the next app restart).
+    -   The app will flash `*** NEW DATA RECEIVED ***` when the new song list is loaded.
 
-## Adding a New Mood
+## Testing
 
-To add an entirely new mood category:
-1.  Add a new object to the main list in `public/music_config.json`:
-
-```json
-{
-  "label": "PARTY",
-  "short": "PTY",
-  "tracks": [
-    { "title": "Party Song", "artist": "Artist", "url": "/songs/party/song.mp3" }
-  ]
-}
-```
-2.  The app will automatically detect the new mood and add it to the mood selector.
+You can verify the data is live by visiting:
+`https://imsahil37.github.io/pixel-mixtape-data/music_config.json`
+in your browser. If you see your new song there, the app will see it too.

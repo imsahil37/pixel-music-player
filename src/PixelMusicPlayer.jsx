@@ -196,21 +196,41 @@ const PixelMusicPlayer = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/music_config.json');
-        if (!response.ok) throw new Error("Failed to fetch");
+        // Try to fetch from remote GitHub Pages first
+        let response = await fetch('https://imsahil37.github.io/pixel-mixtape-data/music_config.json');
+
+        // If remote fails, fallback to local
+        if (!response.ok) {
+           console.log("Remote config not found, checking local...");
+           response = await fetch('/music_config.json');
+        }
+
+        if (!response.ok) throw new Error("Failed to fetch config");
+
         const data = await response.json();
+        const baseUrl = 'https://imsahil37.github.io/pixel-mixtape-data';
+
+        // Normalize URLs: if a URL is relative and we fetched from remote, prepend the base URL
+        const normalizedData = data.map(mood => ({
+          ...mood,
+          tracks: mood.tracks.map(track => {
+            if (track.url.startsWith('http')) return track; // Already absolute
+            if (track.url.startsWith('/')) return { ...track, url: `${baseUrl}${track.url}` }; // Absolute path relative to domain
+            return { ...track, url: `${baseUrl}/${track.url}` }; // Relative path
+          })
+        }));
 
         setMoods(prev => {
            if(prev) {
              const oldTracks = prev.reduce((acc, m) => acc + m.tracks.length, 0);
-             const newTracks = data.reduce((acc, m) => acc + m.tracks.length, 0);
+             const newTracks = normalizedData.reduce((acc, m) => acc + m.tracks.length, 0);
              if(newTracks !== oldTracks) {
                 setLedOverride("*** NEW DATA RECEIVED ***");
                 if(ledTimeoutRef.current) clearTimeout(ledTimeoutRef.current);
                 ledTimeoutRef.current = setTimeout(() => setLedOverride(null), 4000);
              }
            }
-           return data;
+           return normalizedData;
         });
         setIsLoading(false);
       } catch (e) {
